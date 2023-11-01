@@ -5,7 +5,7 @@ const {
 module.exports = (sequelize, DataTypes) => {
   class Mark extends Model {
     static associate({ ModelSneaker }) {
-      this.hasMany(ModelSneaker, { foreignKey: 'id' });
+      this.hasMany(ModelSneaker, { foreignKey: 'mark_id' });
     }
   }
   Mark.init({
@@ -20,7 +20,6 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false,
       unique: true,
     },
-
     createdAt: {
       allowNull: false,
       type: DataTypes.DATE,

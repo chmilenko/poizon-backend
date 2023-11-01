@@ -1,11 +1,36 @@
+/* eslint-disable no-console */
+const express = require('express');
 const TelegramBot = require('node-telegram-bot-api');
-const { telegramToken } = require('./config');
-
-const webAppUrl = 'https://venerable-cascaron-a0c578.netlify.app';
-const formUrl = 'https://venerable-cascaron-a0c578.netlify.app/form';
+const config = require('./config/serverConfig');
+const testDbConnection = require('./db/testDbConnection');
+const { telegramToken, webAppUrl } = require('./config');
 
 const bot = new TelegramBot(telegramToken, { polling: true });
+const sneakerRouter = require('./routes/api/sneakers');
 
+const app = express();
+const PORT = process.env.PORT ?? 5000;
+config(app);
+app.use('/api', sneakerRouter);
+
+app.use((error, req, res, _next) => {
+  console.error('Произошла ошибка', error);
+  res.status(500).json({
+    success: false,
+    message: 'Непредвиденная ошибка сервера, попробуйте зайти позже',
+  });
+});
+
+// порт
+app
+  .listen(PORT, () => {
+    console.log(`сервер запущен на порту ${PORT}`);
+    testDbConnection();
+  })
+  .on('error', (error) => {
+    console.log('Ошибка веб-сервера');
+    console.log(error.message);
+  });
 bot.on('message', async (msg) => {
   const chatId = msg.chat.id;
   const { text } = msg;
@@ -13,7 +38,7 @@ bot.on('message', async (msg) => {
     await bot.sendMessage(chatId, 'pognali nah', {
       reply_markup: {
         keyboard: [
-          [{ text: 'Заполнить форму', web_app: { url: formUrl } }],
+          [{ text: 'Заполнить форму', web_app: { url: `${webAppUrl}/form` } }],
         ],
       },
     });

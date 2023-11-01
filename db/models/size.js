@@ -9,13 +9,19 @@ module.exports = (sequelize, DataTypes) => {
     }
   }
   Size.init({
+    id: {
+      allowNull: false,
+      autoIncrement: true,
+      primaryKey: true,
+      type: DataTypes.INTEGER,
+    },
     size: {
       type: DataTypes.TEXT,
       allowNull: false,
+
     },
     model_sneaker_id: {
       type: DataTypes.INTEGER,
-      allowNull: false,
       references: {
         model: 'ModelSneakers',
         key: 'id',
@@ -25,6 +31,14 @@ module.exports = (sequelize, DataTypes) => {
     count: {
       type: DataTypes.INTEGER,
       allowNull: false,
+    },
+    createdAt: {
+      allowNull: false,
+      type: DataTypes.DATE,
+    },
+    updatedAt: {
+      allowNull: false,
+      type: DataTypes.DATE,
     },
   }, {
     sequelize,
