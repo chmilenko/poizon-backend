@@ -4,10 +4,13 @@ const {
 
 module.exports = (sequelize, DataTypes) => {
   class ModelSneaker extends Model {
-    static associate({ Mark, Size }) {
+    static associate({
+      Mark, Size, Favorite, Photo,
+    }) {
       this.belongsTo(Mark, { foreignKey: 'mark_id' });
-      // this.belongsTo(Favorite, { foreignKey: 'model_sneaker_id' });
+      this.belongsTo(Favorite, { foreignKey: 'id' });
       this.hasMany(Size, { foreignKey: 'model_sneaker_id' });
+      this.hasMany(Photo, { foreignKey: 'model_snekaer_id' });
     }
   }
   ModelSneaker.init({

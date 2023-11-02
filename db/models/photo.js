@@ -3,27 +3,34 @@ const {
 } = require('sequelize');
 
 module.exports = (sequelize, DataTypes) => {
-  class Favorite extends Model {
-    static associate({ User, ModelSneaker }) {
-      this.belongsTo(User, { foreignKey: 'user_id' });
-      this.hasMany(ModelSneaker, { foreignKey: 'id' });
+  class Photo extends Model {
+    /**
+     * Helper method for defining associations.
+     * This method is not a part of Sequelize lifecycle.
+     * The `models/index` file will call this method automatically.
+     */
+    static associate({ ModelSneaker }) {
+      this.belongsTo(ModelSneaker, { foreignKey: 'model_sneaker_id ' });
     }
   }
-  Favorite.init({
+  Photo.init({
     id: {
       allowNull: false,
       autoIncrement: true,
       primaryKey: true,
       type: DataTypes.INTEGER,
     },
-    user_id: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      references: {
-        model: 'Users',
-        key: 'id',
-      },
-      onDelete: 'CASCADE',
+    mainPhoto: {
+      type: DataTypes.TEXT,
+    },
+    photoOne: {
+      type: DataTypes.TEXT,
+    },
+    photoTwo: {
+      type: DataTypes.TEXT,
+    },
+    photoThree: {
+      type: DataTypes.TEXT,
     },
     model_sneaker_id: {
       type: DataTypes.INTEGER,
@@ -33,6 +40,7 @@ module.exports = (sequelize, DataTypes) => {
         key: 'id',
       },
       onDelete: 'CASCADE',
+
     },
     createdAt: {
       allowNull: false,
@@ -44,7 +52,7 @@ module.exports = (sequelize, DataTypes) => {
     },
   }, {
     sequelize,
-    modelName: 'Favorite',
+    modelName: 'Photo',
   });
-  return Favorite;
+  return Photo;
 };

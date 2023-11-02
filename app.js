@@ -31,6 +31,7 @@ app
     console.log('Ошибка веб-сервера');
     console.log(error.message);
   });
+
 bot.on('message', async (msg) => {
   const chatId = msg.chat.id;
   const { text } = msg;
