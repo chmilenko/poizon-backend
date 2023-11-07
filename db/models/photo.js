@@ -4,13 +4,8 @@ const {
 
 module.exports = (sequelize, DataTypes) => {
   class Photo extends Model {
-    /**
-     * Helper method for defining associations.
-     * This method is not a part of Sequelize lifecycle.
-     * The `models/index` file will call this method automatically.
-     */
     static associate({ ModelSneaker }) {
-      this.belongsTo(ModelSneaker, { foreignKey: 'model_sneaker_id ' });
+      this.belongsTo(ModelSneaker, { foreignKey: 'id' });
     }
   }
   Photo.init({
@@ -23,13 +18,19 @@ module.exports = (sequelize, DataTypes) => {
     mainPhoto: {
       type: DataTypes.TEXT,
     },
-    photoOne: {
+    two: {
       type: DataTypes.TEXT,
     },
-    photoTwo: {
+    three: {
       type: DataTypes.TEXT,
     },
-    photoThree: {
+    four: {
+      type: DataTypes.TEXT,
+    },
+    five: {
+      type: DataTypes.TEXT,
+    },
+    six: {
       type: DataTypes.TEXT,
     },
     model_sneaker_id: {

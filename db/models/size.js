@@ -18,7 +18,6 @@ module.exports = (sequelize, DataTypes) => {
     size: {
       type: DataTypes.TEXT,
       allowNull: false,
-
     },
     model_sneaker_id: {
       type: DataTypes.INTEGER,

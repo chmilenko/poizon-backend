@@ -11,13 +11,19 @@ module.exports = {
       mainPhoto: {
         type: Sequelize.TEXT,
       },
-      photoOne: {
+      two: {
         type: Sequelize.TEXT,
       },
-      photoTwo: {
+      three: {
         type: Sequelize.TEXT,
       },
-      photoThree: {
+      four: {
+        type: Sequelize.TEXT,
+      },
+      five: {
+        type: Sequelize.TEXT,
+      },
+      six: {
         type: Sequelize.TEXT,
       },
       model_sneaker_id: {

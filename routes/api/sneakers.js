@@ -1,10 +1,12 @@
 const sneakersRouter = require('express').Router();
-const { ModelSneaker, Size, Mark } = require('../../db/models');
+const {
+  ModelSneaker, Size, Mark, Photo,
+} = require('../../db/models');
 
 sneakersRouter.get('/sneakers', async (req, res) => {
   try {
     const allSneakers = await ModelSneaker.findAll({
-      include: [{ model: Mark }, { model: Size }],
+      include: [{ model: Mark }, { model: Size }, { model: Photo }],
 
     });
     res.status(201).json(allSneakers);
@@ -16,7 +18,7 @@ sneakersRouter.get('/sneakers', async (req, res) => {
 sneakersRouter.get('/sneakers/nike', async (req, res) => {
   try {
     const allSneakers = await ModelSneaker.findAll({
-      include: [{ model: Mark, where: { name: 'Nike' } }, { model: Size }],
+      include: [{ model: Mark, where: { name: 'Nike' } }, { model: Size }, { model: Photo }],
 
     });
     res.status(201).json(allSneakers);
@@ -28,7 +30,7 @@ sneakersRouter.get('/sneakers/nike', async (req, res) => {
 sneakersRouter.get('/sneakers/newbalance', async (req, res) => {
   try {
     const allSneakers = await ModelSneaker.findAll({
-      include: [{ model: Mark, where: { name: 'New Balance' } }, { model: Size }],
+      include: [{ model: Mark, where: { name: 'New Balance' } }, { model: Size }, { model: Photo }],
 
     });
     res.status(201).json(allSneakers);
@@ -40,7 +42,7 @@ sneakersRouter.get('/sneakers/newbalance', async (req, res) => {
 sneakersRouter.get('/sneakers/rickowens', async (req, res) => {
   try {
     const allSneakers = await ModelSneaker.findAll({
-      include: [{ model: Mark, where: { name: 'Rick owens' } }, { model: Size }],
+      include: [{ model: Mark, where: { name: 'Rick owens' } }, { model: Size }, { model: Photo }],
 
     });
     res.status(201).json(allSneakers);
@@ -53,7 +55,7 @@ sneakersRouter.get('/sneakers/:id', async (req, res) => {
   try {
     const { id } = req.params;
     const findSniker = await ModelSneaker.findOne({
-      include: [{ model: Mark }, { model: Size }],
+      include: [{ model: Mark }, { model: Size }, { model: Photo }],
       where: { id },
     });
     res.status(201).json(findSniker);
@@ -66,7 +68,7 @@ sneakersRouter.delete('/sneakers/:id', async (req, res) => {
   try {
     const { id } = req.params;
     await ModelSneaker.destroy({
-      include: [{ model: Mark }, { model: Size }],
+      include: [{ model: Mark }, { model: Size }, { model: Photo }],
       where: { id },
     });
     res.status(201).json(id);

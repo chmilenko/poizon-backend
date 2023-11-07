@@ -14,6 +14,7 @@ const sessionConfig = {
     httpOnly: true, // Серверная установка и удаление куки, по умолчанию true
     // path: '/count'
   },
+  staticPath: '/home/shirota/VscJS/POIZON BACKEND/poizon-backend/public/image',
 };
 
 module.exports = sessionConfig;
