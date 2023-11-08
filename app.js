@@ -1,6 +1,7 @@
 /* eslint-disable no-console */
 require('dotenv').config();
 // const path = require('path');
+const cors = require('cors');
 
 const express = require('express');
 const TelegramBot = require('node-telegram-bot-api');
@@ -10,12 +11,18 @@ const { telegramToken } = require('./config');
 
 const bot = new TelegramBot(telegramToken, { polling: true });
 const sneakerRouter = require('./routes/api/sneakers');
+const adminRouter = require('./routes/api/admin');
 
 const webAppUrl = 'https://venerable-cascaron-a0c578.netlify.app';
 const app = express();
 const PORT = process.env.PORT ?? 5000;
 config(app);
+app.use(cors({
+  origin: 'http://localhost:3000',
+  credentials: true,
+}));
 app.use('/api', sneakerRouter);
+app.use('/api', adminRouter);
 
 app.use((error, req, res, _next) => {
   console.error('Произошла ошибка', error);
@@ -25,7 +32,6 @@ app.use((error, req, res, _next) => {
   });
 });
 
-// порт
 app
   .listen(PORT, () => {
     console.log(`сервер запущен на порту ${PORT}`);

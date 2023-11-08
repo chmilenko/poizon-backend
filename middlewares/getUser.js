@@ -1,10 +1,9 @@
-const { User } = require('../db/models');
+const { Admin } = require('../db/models');
 
 module.exports = async function getUser(req, res, next) {
   if (req.session.userId) {
-    const user = await User.findOne({ where: { id: req.session.userId } });
-
-    res.locals.user = user;
+    const admin = await Admin.findOne({ where: { id: req.session.userId } });
+    res.locals.admin = admin;
   }
   next();
 };

@@ -30,6 +30,7 @@ function config(app) {
 
   // миддлварка для работы с сессиями
   app.use(session(sessionConfig));
+  app.disable('x-powered-by');
 
   app.use(getUser);
   // app.use(getStatic);
