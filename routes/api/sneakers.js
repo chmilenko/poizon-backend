@@ -8,7 +8,6 @@ sneakersRouter.get('/sneakers', async (req, res) => {
   try {
     const allSneakers = await ModelSneaker.findAll({
       include: [{ model: Mark }, { model: Size }, { model: Photo }],
-
     });
     res.status(201).json(allSneakers);
   } catch (error) {
@@ -98,6 +97,7 @@ sneakersRouter.post('/sneakers', async (req, res) => {
   }
 });
 
+// eslint-disable-next-line consistent-return
 sneakersRouter.post('/sneakers/photos', async (req, res) => {
   try {
     const { photos, id } = req.body;
