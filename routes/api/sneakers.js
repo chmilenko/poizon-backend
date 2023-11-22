@@ -2,7 +2,7 @@ const sneakersRouter = require('express').Router();
 const {
   ModelSneaker, Size, Mark, Photo,
 } = require('../../db/models');
-// const fileMiddleware = require('../../middlewares/fileUpload');
+const fileMiddleware = require('../../middlewares/fileUpload');
 
 sneakersRouter.get('/sneakers', async (req, res) => {
   try {
@@ -85,79 +85,82 @@ sneakersRouter.post('/sneakers', async (req, res) => {
       }
     }
 
-    const result = await ModelSneaker.findOne({
-      where: { mark_id: markInstance.id },
-      // include: [{ model: Mark }, { model: Size }, { model: Photo }],
-    });
-
-    return res.status(201).json(result);
+    return res.status(201).json(modelInstance);
   } catch (error) {
     // console.log(error);
-    res.status(500).console.log(error);
+    res.status(500).json({ message: error.message });
   }
 });
 
-// eslint-disable-next-line consistent-return
-sneakersRouter.post('/sneakers/photos', async (req, res) => {
+sneakersRouter.post('/sneakers/photos/:id', fileMiddleware.fields([
+  { name: 'mainPhoto', maxCount: 1 },
+  { name: 'two', maxCount: 1 },
+  { name: 'three', maxCount: 1 },
+  { name: 'four', maxCount: 1 },
+  { name: 'five', maxCount: 1 },
+  { name: 'six', maxCount: 1 },
+]), async (req, res) => {
   try {
-    const { photos, id } = req.body;
+    const { id } = req.params;
     const sneakerInstance = await ModelSneaker.findOne({ where: { id } });
-    if (photos && photos.length > 6) {
-      return res.status(400).json({ message: 'Photos array should not have more than 6 items.' });
+
+    if (Object.keys(req.files).length === 0) {
+      return res.status(400).json({ message: 'No photos provided.' });
     }
 
-    if (photos && photos.length) {
-      await Photo.create({
-        model_sneaker_id: sneakerInstance.id,
-        mainPhoto: photos[0] || null,
-        two: photos[1] || null,
-        three: photos[2] || null,
-        four: photos[3] || null,
-        five: photos[4] || null,
-        six: photos[5] || null,
-      });
+    const photoFields = ['mainPhoto', 'two', 'three', 'four', 'five', 'six'];
+    const photosObject = { model_sneaker_id: sneakerInstance.id };
+
+    // eslint-disable-next-line no-restricted-syntax
+    for (const field of photoFields) {
+      if (req.files[field] && req.files[field].length > 0) {
+        photosObject[field] = req.files[field][0].path.replace('public', '');
+      }
     }
+
+    await Photo.create(photosObject);
     res.status(201).json({ message: 'success' });
   } catch (error) {
-    console.log(error);
-  }
-});
-
-sneakersRouter.get('/sneakers/nike', async (req, res) => {
-  try {
-    const allSneakers = await ModelSneaker.findAll({
-      include: [{ model: Mark, where: { name: 'Nike' } }, { model: Size }, { model: Photo }],
-
-    });
-    res.status(201).json(allSneakers);
-  } catch (error) {
+    console.error(error);
     res.status(500).json({ message: error.message });
   }
 });
 
-sneakersRouter.get('/sneakers/newbalance', async (req, res) => {
-  try {
-    const allSneakers = await ModelSneaker.findAll({
-      include: [{ model: Mark, where: { name: 'New Balance' } }, { model: Size }, { model: Photo }],
+// sneakersRouter.get('/sneakers/nike', async (req, res) => {
+//   try {
+//     const allSneakers = await ModelSneaker.findAll({
+//       include: [{ model: Mark, where: { name: 'Nike' } }, { model: Size }, { model: Photo }],
 
-    });
-    res.status(201).json(allSneakers);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-});
+//     });
+//     res.status(201).json(allSneakers);
+//   } catch (error) {
+//     res.status(500).json({ message: error.message });
+//   }
+// });
 
-sneakersRouter.get('/sneakers/rickowens', async (req, res) => {
-  try {
-    const allSneakers = await ModelSneaker.findAll({
-      include: [{ model: Mark, where: { name: 'Rick owens' } }, { model: Size }, { model: Photo }],
+// sneakersRouter.get('/sneakers/newbalance', async (req, res) => {
+//   try {
+//     const allSneakers = await ModelSneaker.findAll({
+//       include: [{ model: Mark, where: { name: 'New Balance' } }, { model: Size }, { model: Photo }],
 
-    });
-    res.status(201).json(allSneakers);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-});
+//     });
+//     res.status(201).json(allSneakers);
+//   } catch (error) {
+//     res.status(500).json({ message: error.message });
+//   }
+// });
+
+// sneakersRouter.get('/sneakers/rickowens', async (req, res) => {
+//   try {
+//     const allSneakers = await ModelSneaker.findAll({
+//       include: [{ model: Mark, where: { name: 'Rick owens' } }, { model: Size }, { model: Photo }],
+
+//     });
+//     res.status(201).json(allSneakers);
+//   } catch (error) {
+//     res.status(500).json({ message: error.message });
+//   }
+// });
 
 sneakersRouter.get('/sneakers/:id', async (req, res) => {
   try {

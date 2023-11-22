@@ -18,18 +18,19 @@ const app = express();
 const PORT = process.env.PORT ?? 5000;
 config(app);
 app.use(cors({
-  origin: 'http://localhost:3000',
+  origin: ['http://localhost:3000'],
   credentials: true,
 }));
 app.use('/api', sneakerRouter);
 app.use('/api', adminRouter);
 
-app.use((error, req, res, _next) => {
+app.use((error, req, res, next) => {
   console.error('Произошла ошибка', error);
   res.status(500).json({
     success: false,
     message: 'Непредвиденная ошибка сервера, попробуйте зайти позже',
   });
+  next();
 });
 
 app

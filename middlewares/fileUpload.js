@@ -5,7 +5,7 @@ const storage = multer.diskStorage({
     cb(null, 'public/image/');
   },
   filename(req, file, cb) {
-    cb(null, `${new Date().toISOString()}-${file.originalname}`);
+    cb(null, file.originalname);
   },
 });
 

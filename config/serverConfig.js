@@ -23,7 +23,7 @@ function config(app) {
   app.use(express.json());
 
   // логирование деталей запроса
-  app.use(morgan('tiny'));
+  app.use(morgan('dev'));
 
   // расшифровывает куки в запросах от клиента
   app.use(cookieParser());

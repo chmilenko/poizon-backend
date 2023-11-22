@@ -10,6 +10,9 @@ const sessionConfig = {
   cookie: {
     maxAge: 1000 * 60 * 60 * 12,
     httpOnly: true,
+    sameSite: 'strict',
+    secure: true,
+    path: '/',
   },
 };
 

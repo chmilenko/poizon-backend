@@ -3,11 +3,11 @@ const bcrypt = require('bcrypt');
 const { Admin } = require('../../db/models');
 
 authRouter.get('/verification', async (req, res) => {
-  const { admin } = res.locals;
-  if (admin) {
+  const { user } = res.locals;
+  console.log(res.locals);
+  if (user) {
     res.json({
-      isLoggedIn: true,
-      admin,
+      user,
     });
   } else {
     res.json({ isLoggedIn: false });
