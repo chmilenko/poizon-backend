@@ -1,7 +1,6 @@
 /* eslint-disable no-console */
 require('dotenv').config();
 // const path = require('path');
-const cors = require('cors');
 
 const express = require('express');
 const TelegramBot = require('node-telegram-bot-api');
@@ -17,10 +16,7 @@ const webAppUrl = 'https://venerable-cascaron-a0c578.netlify.app';
 const app = express();
 const PORT = process.env.PORT ?? 5000;
 config(app);
-app.use(cors({
-  origin: ['http://localhost:3000'],
-  credentials: true,
-}));
+
 app.use('/api', sneakerRouter);
 app.use('/api', adminRouter);
 

@@ -1,4 +1,8 @@
+/* eslint-disable no-await-in-loop */
+/* eslint-disable no-restricted-syntax */
+/* eslint-disable prefer-const */
 const sneakersRouter = require('express').Router();
+const { Model } = require('sequelize');
 const {
   ModelSneaker, Size, Mark, Photo,
 } = require('../../db/models');
@@ -37,30 +41,15 @@ sneakersRouter.post('/sneakers', async (req, res) => {
     const {
       mark, model, price, sizeCounts,
     } = req.body;
-    console.log('DADADDATATA:', mark);
-    let markName;
-    if (typeof mark === 'string') {
-      markName = mark;
-    } else if (typeof mark === 'object' && mark !== null) {
-      markName = mark.name;
-    } else {
-      throw new Error('Invalid format for `mark`');
-    }
 
+    const markName = typeof mark === 'object' ? mark.name : mark;
     let markInstance = await Mark.findOne({ where: { name: markName } });
     if (!markInstance) {
       markInstance = await Mark.create({
         name: markName,
       });
     }
-    let modelName;
-    if (typeof model === 'string') {
-      modelName = model;
-    } else if (typeof model === 'object' && model !== null) {
-      modelName = model.name;
-    } else {
-      throw new Error('Invalid format for `mark`');
-    }
+    const modelName = typeof model === 'object' ? model.name : model;
 
     let modelInstance = await ModelSneaker.findOne({ where: { name: modelName } });
     if (!modelInstance) {
@@ -126,41 +115,79 @@ sneakersRouter.post('/sneakers/photos/:id', fileMiddleware.fields([
   }
 });
 
-// sneakersRouter.get('/sneakers/nike', async (req, res) => {
-//   try {
-//     const allSneakers = await ModelSneaker.findAll({
-//       include: [{ model: Mark, where: { name: 'Nike' } }, { model: Size }, { model: Photo }],
+sneakersRouter.put('/sneakers/:id', async (req, res) => {
+  try {
+    const {
+      mark, model, price, sizeCounts,
+    } = req.body;
+    const { id } = req.params;
 
-//     });
-//     res.status(201).json(allSneakers);
-//   } catch (error) {
-//     res.status(500).json({ message: error.message });
-//   }
-// });
+    let markName = typeof mark === 'object' ? mark.name : mark;
+    let markInstance = await Mark.findOne({ where: { name: markName } });
+    let modelName = typeof model === 'object' ? model.name : model;
 
-// sneakersRouter.get('/sneakers/newbalance', async (req, res) => {
-//   try {
-//     const allSneakers = await ModelSneaker.findAll({
-//       include: [{ model: Mark, where: { name: 'New Balance' } }, { model: Size }, { model: Photo }],
+    if (!markInstance) {
+      markInstance = await Mark.create({
+        name: markName,
+      });
+    }
+    let modelInstance = await ModelSneaker.findOne({ where: { id } });
 
-//     });
-//     res.status(201).json(allSneakers);
-//   } catch (error) {
-//     res.status(500).json({ message: error.message });
-//   }
-// });
+    const putModal = await modelInstance.update({
+      name: modelName,
+      mark_id: markInstance.id,
+      price,
+    });
 
-// sneakersRouter.get('/sneakers/rickowens', async (req, res) => {
-//   try {
-//     const allSneakers = await ModelSneaker.findAll({
-//       include: [{ model: Mark, where: { name: 'Rick owens' } }, { model: Size }, { model: Photo }],
+    if (sizeCounts) {
+      const currentSizes = await Size.findAll({ where: { model_sneaker_id: id } });
+      const currentSizeMap = new Map();
+      for (const currentSize of currentSizes) {
+        currentSizeMap.set(currentSize.size, currentSize);
+      }
 
-//     });
-//     res.status(201).json(allSneakers);
-//   } catch (error) {
-//     res.status(500).json({ message: error.message });
-//   }
-// });
+      const deletedSizes = [];
+
+      for (const { size } of currentSizes) {
+        if (!sizeCounts.find((item) => item.size === size)) {
+          deletedSizes.push(size);
+        }
+      }
+
+      if (deletedSizes.length > 0) {
+        await Size.destroy({ where: { model_sneaker_id: id, size: deletedSizes } });
+      }
+
+      for (const { size, count } of sizeCounts) {
+        let sizeInstance = currentSizeMap.get(size);
+        if (!sizeInstance) {
+          sizeInstance = await Size.create({
+            model_sneaker_id: id,
+            size,
+            count,
+          });
+        } else {
+          await sizeInstance.update({
+            count,
+          });
+        }
+      }
+    }
+
+    res.status(200).json(putModal);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Ошибка сервера' });
+  }
+});
+sneakersRouter.put('/sneakers/photos/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Ошибка сервера' });
+  }
+});
 
 sneakersRouter.get('/sneakers/:id', async (req, res) => {
   try {

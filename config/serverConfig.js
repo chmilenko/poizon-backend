@@ -3,6 +3,7 @@ const cookieParser = require('cookie-parser');
 const session = require('express-session');
 const morgan = require('morgan');
 const path = require('path');
+
 const getUser = require('../middlewares/getUser');
 // const getStatic = require('../middlewares/static');
 const sessionConfig = require('./sessionConfig');
