@@ -1,6 +1,4 @@
-/* eslint-disable no-await-in-loop */
-/* eslint-disable no-restricted-syntax */
-/* eslint-disable prefer-const */
+
 const sneakersRouter = require('express').Router();
 const { Model } = require('sequelize');
 const {
@@ -51,7 +49,9 @@ sneakersRouter.post('/sneakers', async (req, res) => {
     }
     const modelName = typeof model === 'object' ? model.name : model;
 
-    let modelInstance = await ModelSneaker.findOne({ where: { name: modelName } });
+    let modelInstance = await ModelSneaker.findOne({
+      where: { name: modelName },
+    });
     if (!modelInstance) {
       modelInstance = await ModelSneaker.create({
         name: modelName,
@@ -63,7 +63,9 @@ sneakersRouter.post('/sneakers', async (req, res) => {
     // eslint-disable-next-line no-restricted-syntax
     for (const { size, count } of sizeCounts) {
       // eslint-disable-next-line max-len, no-await-in-loop
-      let sizeInstance = await Size.findOne({ where: { model_sneaker_id: modelInstance.id, size } });
+      let sizeInstance = await Size.findOne({
+        where: { model_sneaker_id: modelInstance.id, size },
+      });
       if (!sizeInstance) {
         // eslint-disable-next-line no-await-in-loop
         sizeInstance = await Size.create({
@@ -81,39 +83,43 @@ sneakersRouter.post('/sneakers', async (req, res) => {
   }
 });
 
-sneakersRouter.post('/sneakers/photos/:id', fileMiddleware.fields([
-  { name: 'mainPhoto', maxCount: 1 },
-  { name: 'two', maxCount: 1 },
-  { name: 'three', maxCount: 1 },
-  { name: 'four', maxCount: 1 },
-  { name: 'five', maxCount: 1 },
-  { name: 'six', maxCount: 1 },
-]), async (req, res) => {
-  try {
-    const { id } = req.params;
-    const sneakerInstance = await ModelSneaker.findOne({ where: { id } });
+sneakersRouter.post(
+  '/sneakers/photos/:id',
+  fileMiddleware.fields([
+    { name: 'mainPhoto', maxCount: 1 },
+    { name: 'two', maxCount: 1 },
+    { name: 'three', maxCount: 1 },
+    { name: 'four', maxCount: 1 },
+    { name: 'five', maxCount: 1 },
+    { name: 'six', maxCount: 1 },
+  ]),
+  async (req, res) => {
+    try {
+      const { id } = req.params;
+      const sneakerInstance = await ModelSneaker.findOne({ where: { id } });
 
-    if (Object.keys(req.files).length === 0) {
-      return res.status(400).json({ message: 'No photos provided.' });
-    }
-
-    const photoFields = ['mainPhoto', 'two', 'three', 'four', 'five', 'six'];
-    const photosObject = { model_sneaker_id: sneakerInstance.id };
-
-    // eslint-disable-next-line no-restricted-syntax
-    for (const field of photoFields) {
-      if (req.files[field] && req.files[field].length > 0) {
-        photosObject[field] = req.files[field][0].path.replace('public', '');
+      if (Object.keys(req.files).length === 0) {
+        return res.status(400).json({ message: 'No photos provided.' });
       }
-    }
 
-    await Photo.create(photosObject);
-    res.status(201).json({ message: 'success' });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: error.message });
-  }
-});
+      const photoFields = ['mainPhoto', 'two', 'three', 'four', 'five', 'six'];
+      const photosObject = { model_sneaker_id: sneakerInstance.id };
+
+      // eslint-disable-next-line no-restricted-syntax
+      for (const field of photoFields) {
+        if (req.files[field] && req.files[field].length > 0) {
+          photosObject[field] = req.files[field][0].path.replace('public', '');
+        }
+      }
+
+      await Photo.create(photosObject);
+      res.status(201).json({ message: 'success' });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: error.message });
+    }
+  },
+);
 
 sneakersRouter.put('/sneakers/:id', async (req, res) => {
   try {
@@ -140,7 +146,9 @@ sneakersRouter.put('/sneakers/:id', async (req, res) => {
     });
 
     if (sizeCounts) {
-      const currentSizes = await Size.findAll({ where: { model_sneaker_id: id } });
+      const currentSizes = await Size.findAll({
+        where: { model_sneaker_id: id },
+      });
       const currentSizeMap = new Map();
       for (const currentSize of currentSizes) {
         currentSizeMap.set(currentSize.size, currentSize);
@@ -155,7 +163,9 @@ sneakersRouter.put('/sneakers/:id', async (req, res) => {
       }
 
       if (deletedSizes.length > 0) {
-        await Size.destroy({ where: { model_sneaker_id: id, size: deletedSizes } });
+        await Size.destroy({
+          where: { model_sneaker_id: id, size: deletedSizes },
+        });
       }
 
       for (const { size, count } of sizeCounts) {

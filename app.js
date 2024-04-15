@@ -6,13 +6,13 @@ const express = require('express');
 const TelegramBot = require('node-telegram-bot-api');
 const config = require('./config/serverConfig');
 const testDbConnection = require('./db/testDbConnection');
-const { telegramToken } = require('./config');
+// const { telegramToken } = require('./config');
 
-const bot = new TelegramBot(telegramToken, { polling: true });
+const bot = new TelegramBot('6904170138:AAG2YsuiQGcm0cF0xtyQvoiJz6dO251B5zg', { polling: true });
 const sneakerRouter = require('./routes/api/sneakers');
 const adminRouter = require('./routes/api/admin');
 
-const webAppUrl = 'https://venerable-cascaron-a0c578.netlify.app';
+const webAppUrl = 'https://gentle-sprite-12b05e.netlify.app';
 const app = express();
 const PORT = process.env.PORT ?? 5000;
 config(app);
@@ -43,10 +43,13 @@ bot.on('message', async (msg) => {
   const chatId = msg.chat.id;
   const { text } = msg;
   if (text === '/start') {
-    await bot.sendMessage(chatId, 'pognali nah', {
+    await bot.sendMessage(chatId, 'Приветсвую вас', {
       reply_markup: {
         keyboard: [
-          [{ text: 'Заполнить форму', web_app: { url: `${webAppUrl}/form` } }],
+          [{ text: 'В магазин', web_app: { url: `${webAppUrl}` } }],
+          [{ text: 'FAQ', web_app: { url: `${webAppUrl}` } }],
+          [{ text: 'Отзывы', web_app: { url: `${webAppUrl}` } }],
+
         ],
       },
     });
