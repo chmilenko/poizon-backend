@@ -1,14 +1,17 @@
 /* eslint-disable no-console */
 require('dotenv').config();
-// const path = require('path');
 
 const express = require('express');
 const TelegramBot = require('node-telegram-bot-api');
+const cors = require('cors');
 const config = require('./config/serverConfig');
 const testDbConnection = require('./db/testDbConnection');
+
 // const { telegramToken } = require('./config');
 
-const bot = new TelegramBot('6904170138:AAG2YsuiQGcm0cF0xtyQvoiJz6dO251B5zg', { polling: true });
+const bot = new TelegramBot('6904170138:AAG2YsuiQGcm0cF0xtyQvoiJz6dO251B5zg', {
+  polling: true,
+});
 const sneakerRouter = require('./routes/api/sneakers');
 const adminRouter = require('./routes/api/admin');
 
@@ -16,7 +19,10 @@ const webAppUrl = 'https://gentle-sprite-12b05e.netlify.app';
 const app = express();
 const PORT = process.env.PORT ?? 5000;
 config(app);
-
+const corsOptions = {
+  origin: '*',
+};
+app.use(cors(corsOptions));
 app.use('/api', sneakerRouter);
 app.use('/api', adminRouter);
 
@@ -49,7 +55,6 @@ bot.on('message', async (msg) => {
           [{ text: 'В магазин', web_app: { url: `${webAppUrl}` } }],
           [{ text: 'FAQ', web_app: { url: `${webAppUrl}` } }],
           [{ text: 'Отзывы', web_app: { url: `${webAppUrl}` } }],
-
         ],
       },
     });
@@ -60,7 +65,6 @@ bot.on('message', async (msg) => {
         inline_keyboard: [
           [{ text: 'jopa pisya', web_app: { url: webAppUrl } }],
         ],
-
       },
     });
   }

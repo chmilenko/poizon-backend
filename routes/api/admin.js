@@ -4,7 +4,6 @@ const { Admin } = require('../../db/models');
 
 authRouter.get('/verification', async (req, res) => {
   const { user } = res.locals;
-  console.log(res.locals);
   if (user) {
     res.json({
       user,
