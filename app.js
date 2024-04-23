@@ -14,6 +14,7 @@ const bot = new TelegramBot('6904170138:AAG2YsuiQGcm0cF0xtyQvoiJz6dO251B5zg', {
 });
 const sneakerRouter = require('./routes/api/sneakers');
 const adminRouter = require('./routes/api/admin');
+const orderRouter = require('./routes/api/orders');
 
 const webAppUrl = 'https://gentle-sprite-12b05e.netlify.app';
 const app = express();
@@ -25,6 +26,7 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.use('/api', sneakerRouter);
 app.use('/api', adminRouter);
+app.use('/api', orderRouter);
 
 app.use((error, req, res, next) => {
   console.error('Произошла ошибка', error);

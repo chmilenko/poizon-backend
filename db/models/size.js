@@ -4,8 +4,9 @@ const {
 
 module.exports = (sequelize, DataTypes) => {
   class Size extends Model {
-    static associate({ CountSize }) {
+    static associate({ CountSize, OrderItem }) {
       this.hasMany(CountSize, { foreignKey: 'size_id' });
+      this.hasMany(OrderItem, { foreignKey: 'order_id' });
     }
   }
   Size.init({

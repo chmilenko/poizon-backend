@@ -5,7 +5,7 @@ const {
 module.exports = (sequelize, DataTypes) => {
   class Order extends Model {
     static associate({ User, OrderItem }) {
-      this.belongsTo(User, { foreignKey: 'id' });
+      this.belongsTo(User, { foreignKey: 'user_id' });
       this.hasMany(OrderItem, { foreignKey: 'order_id' });
     }
   }
@@ -17,8 +17,9 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.INTEGER,
     },
     user_id: {
-      type: DataTypes.TEXT,
+      type: DataTypes.INTEGER,
       allowNull: false,
+      primaryKey: true,
     },
     status: {
       type: DataTypes.ENUM('Новый', 'В работе', 'Выполнен', 'Отклонен'),

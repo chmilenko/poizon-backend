@@ -8,9 +8,10 @@ module.exports = {
         primaryKey: true,
         type: Sequelize.INTEGER,
       },
-      user: {
-        type: Sequelize.TEXT,
+      user_id: {
+        type: Sequelize.INTEGER,
         allowNull: false,
+        primaryKey: true,
       },
       status: {
         type: Sequelize.ENUM('Новый', 'В работе', 'Выполнен', 'Отклонен'),

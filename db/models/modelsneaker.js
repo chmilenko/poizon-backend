@@ -5,11 +5,12 @@ const {
 module.exports = (sequelize, DataTypes) => {
   class ModelSneaker extends Model {
     static associate({
-      Mark, Photo, CountSize,
+      Mark, Photo, CountSize, OrderItem,
     }) {
       ModelSneaker.belongsTo(Mark, { foreignKey: 'mark_id' });
       ModelSneaker.hasMany(Photo, { foreignKey: 'model_id' });
       ModelSneaker.hasMany(CountSize, { foreignKey: 'model_id' });
+      ModelSneaker.hasMany(OrderItem, { foreignKey: 'model_id' });
     }
   }
   ModelSneaker.init({
