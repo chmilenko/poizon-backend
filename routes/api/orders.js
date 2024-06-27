@@ -15,6 +15,7 @@ ordersRouter.get('/orders', async (req, res) => {
     const formattedOrders = allOrders.map((order) => ({
       id: order.id,
       user: order.User.name,
+      status: order.status,
       OrderItems: order.OrderItems.reduce((acc, item) => {
         const existingItem = acc.find((accItem) => accItem.name === item.ModelSneaker.name);
         if (existingItem) {
@@ -43,7 +44,7 @@ ordersRouter.get('/orders', async (req, res) => {
 
 ordersRouter.post('/orders', async (req, res) => {
   try {
-    const { user, items } = req.body;
+    const { user, items } = req.body.data;
     let userInstance = await User.findOne({ where: { name: user } });
 
     if (!userInstance) {

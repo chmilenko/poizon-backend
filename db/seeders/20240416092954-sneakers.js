@@ -1,9 +1,21 @@
+const bcrypt = require('bcrypt');
 const {
-  Mark, ModelSneaker, Size, Photo, Count, CountSize,
+  Mark, ModelSneaker, Size, Photo, Count, CountSize, Admin,
 } = require('../models');
+
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
+
   async up() {
+    await Admin.bulkCreate([
+
+      {
+        login: 'olejaAdmin)(',
+        password: await bcrypt.hash('repAdminpoizon', 10),
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+    ]);
     await Mark.bulkCreate([
       { name: 'Nike' },
       { name: 'Adidas' },

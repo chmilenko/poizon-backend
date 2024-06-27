@@ -17,6 +17,7 @@ const adminRouter = require('./routes/api/admin');
 const orderRouter = require('./routes/api/orders');
 
 const webAppUrl = 'https://gentle-sprite-12b05e.netlify.app';
+
 const app = express();
 const PORT = process.env.PORT ?? 5000;
 config(app);
@@ -27,7 +28,7 @@ app.use(cors(corsOptions));
 app.use('/api', sneakerRouter);
 app.use('/api', adminRouter);
 app.use('/api', orderRouter);
-
+app.use('/api', adminRouter);
 app.use((error, req, res, next) => {
   console.error('Произошла ошибка', error);
   res.status(500).json({

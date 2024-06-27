@@ -7,31 +7,31 @@
 /* eslint-disable no-console */
 // eslint-disable-next-line linebreak-style
 const sneakersRouter = require('express').Router();
-
 const { where } = require('sequelize');
+const authenticateJWT = require('../../middlewares/jwt');
 const {
   ModelSneaker, Size, Mark, Photo, CountSize, Count,
 } = require('../../db/models');
 
 const fileMiddleware = require('../../middlewares/fileUpload');
 
-// sneakersRouter.get('/sneakers/mark', async (req, res) => {
-//   try {
-//     const marks = await Mark.findAll();
-//     res.status(201).json(marks);
-//   } catch (error) {
-//     res.status(500).json({ message: error.message });
-//   }
-// });
+sneakersRouter.get('/sneakers/mark', async (req, res) => {
+  try {
+    const marks = await Mark.findAll();
+    res.status(201).json(marks);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
 
-// sneakersRouter.get('/sneakers/models', async (req, res) => {
-//   try {
-//     const models = await ModelSneaker.findAll();
-//     res.status(201).json(models);
-//   } catch (error) {
-//     res.status(500).json({ message: error.message });
-//   }
-// });
+sneakersRouter.get('/sneakers/models', async (req, res) => {
+  try {
+    const models = await ModelSneaker.findAll();
+    res.status(201).json(models);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
 
 sneakersRouter.get('/sneakers', async (req, res) => {
   try {
@@ -68,14 +68,15 @@ sneakersRouter.get('/sneakers', async (req, res) => {
   }
 });
 // eslint-disable-next-line consistent-return
-sneakersRouter.post('/sneakers', async (req, res) => {
+sneakersRouter.post('/sneakers', authenticateJWT, async (req, res) => {
   try {
     const {
       mark, model, price, sizeCounts,
-    } = req.body;
-    console.log(req.body);
-    const markName = typeof mark === 'object' ? mark.name : mark;
+      description,
+    } = req.body.data;
 
+    const markName = typeof mark === 'object' ? mark.name : mark;
+    console.log(typeof mark);
     let markInstance = await Mark.findOne({ where: { name: markName } });
 
     if (!markInstance) {
@@ -93,6 +94,7 @@ sneakersRouter.post('/sneakers', async (req, res) => {
         name: modelName,
         price,
         mark_id: markInstance.id,
+        description,
       });
     }
 
