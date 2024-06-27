@@ -25,11 +25,14 @@ authRouter.post('/authenication', async (req, res) => {
   }
 });
 
-authRouter.post('/logout', (req, res) => {
+authRouter.post('/token', async (req, res) => {
+  const { token } = req.body;
+
   try {
-
+    jwt.verify(token, process.env.SECRET_KEY);
+    res.json({ valid: true });
   } catch (error) {
-
+    res.json({ valid: false });
   }
 });
 
