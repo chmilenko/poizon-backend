@@ -4,9 +4,10 @@ const {
 
 module.exports = (sequelize, DataTypes) => {
   class Order extends Model {
-    static associate({ User, OrderItem }) {
+    static associate({ User, OrderItem, Status }) {
       this.belongsTo(User, { foreignKey: 'user_id' });
       this.hasMany(OrderItem, { foreignKey: 'order_id' });
+      this.belongsTo(Status, { foreignKey: 'status_id' });
     }
   }
   Order.init({
@@ -21,10 +22,13 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false,
       primaryKey: true,
     },
-    status: {
-      type: DataTypes.ENUM('Новый', 'В работе', 'Выполнен', 'Отклонен'),
+    status_id: {
+      type: DataTypes.INTEGER,
       allowNull: false,
-      defaultValue: 'Новый',
+      references: {
+        model: 'Status',
+        key: 'id',
+      },
     },
   }, {
     sequelize,

@@ -1,6 +1,6 @@
 const bcrypt = require('bcrypt');
 const {
-  Mark, ModelSneaker, Size, Photo, Count, CountSize, Admin,
+  Mark, ModelSneaker, Size, Photo, Count, CountSize, Admin, Status,
 } = require('../models');
 
 /** @type {import('sequelize-cli').Migration} */
@@ -20,6 +20,12 @@ module.exports = {
       { name: 'Nike' },
       { name: 'Adidas' },
       { name: 'New Balance' },
+    ]);
+    await Status.bulkCreate([
+      { name: 'Новый' },
+      { name: 'В работе' },
+      { name: 'Выполнен' },
+      { name: 'Отклонен' },
     ]);
     await ModelSneaker.bulkCreate([
       {
