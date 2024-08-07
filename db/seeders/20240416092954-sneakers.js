@@ -1,6 +1,6 @@
 const bcrypt = require('bcrypt');
 const {
-  Mark, ModelSneaker, Size, Photo, Count, CountSize, Admin, Status,
+  Mark, ModelSneaker, Size, Photo, Count, CountSize, Admin, Status, DeliveryType, DeliveryData,
 } = require('../models');
 
 /** @type {import('sequelize-cli').Migration} */
@@ -20,6 +20,17 @@ module.exports = {
       { name: 'Nike' },
       { name: 'Adidas' },
       { name: 'New Balance' },
+    ]);
+    await DeliveryType.bulkCreate([
+      {
+        name: 'Самовывоз из СПб', requireFullName: false, requiresAddress: false, requiresPhoneNumber: true, requiresPickupPoint: false,
+      },
+      {
+        name: 'Доставка по СПб Яндекс Курьером', requireFullName: true, requiresAddress: true, requiresPhoneNumber: true, requiresPickupPoint: true,
+      },
+      {
+        name: 'Доставка СДЭК', requireFullName: true, requiresAddress: true, requiresPhoneNumber: true,
+      },
     ]);
     await Status.bulkCreate([
       { name: 'Новый' },
@@ -610,5 +621,6 @@ module.exports = {
     await Size.destroy({ truncate: { cascade: true } });
     await Photo.destroy({ truncate: { cascade: true } });
     await ModelSneaker.destroy({ truncate: { cascade: true } });
+    await DeliveryData.destroy({ truncate: { cascade: true } });
   },
 };

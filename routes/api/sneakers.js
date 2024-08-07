@@ -73,7 +73,7 @@ sneakersRouter.post('/sneakers', authenticateJWT, async (req, res) => {
     const {
       mark, model, price, sizeCounts,
       description,
-    } = req.body.data;
+    } = req.body;
 
     const markName = typeof mark === 'object' ? mark.name : mark;
     console.log(typeof mark);

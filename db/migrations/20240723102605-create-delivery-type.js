@@ -1,27 +1,27 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable('Orders', {
+    await queryInterface.createTable('DeliveryTypes', {
       id: {
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
         type: Sequelize.INTEGER,
       },
-      user_id: {
-        type: Sequelize.INTEGER,
-        allowNull: false,
-        // primaryKey: true,
+      name: {
+        type: Sequelize.TEXT,
       },
-      delivery_type_id: {
-        type: Sequelize.INTEGER,
-        allowNull: false,
-        // primaryKey: true,
+      requireFullName: {
+        type: Sequelize.TEXT,
       },
-      status_id: {
-        type: Sequelize.INTEGER,
-        allowNull: false,
-        // primaryKey: true,
+      requiresAddress: {
+        type: Sequelize.BOOLEAN,
+      },
+      requiresPhoneNumber: {
+        type: Sequelize.BOOLEAN,
+      },
+      requiresPickupPoint: {
+        type: Sequelize.BOOLEAN,
       },
       createdAt: {
         allowNull: false,
@@ -34,6 +34,6 @@ module.exports = {
     });
   },
   async down(queryInterface) {
-    await queryInterface.dropTable('Orders');
+    await queryInterface.dropTable('DeliveryTypes');
   },
 };
