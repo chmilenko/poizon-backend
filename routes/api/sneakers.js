@@ -9,6 +9,7 @@
 const sneakersRouter = require('express').Router();
 const { where } = require('sequelize');
 const authenticateJWT = require('../../middlewares/jwt');
+
 const {
   ModelSneaker, Size, Mark, Photo, CountSize, Count,
 } = require('../../db/models');
@@ -76,7 +77,7 @@ sneakersRouter.post('/sneakers', authenticateJWT, async (req, res) => {
     } = req.body;
 
     const markName = typeof mark === 'object' ? mark.name : mark;
-    console.log(typeof mark);
+
     let markInstance = await Mark.findOne({ where: { name: markName } });
 
     if (!markInstance) {
@@ -125,6 +126,7 @@ sneakersRouter.post('/sneakers', authenticateJWT, async (req, res) => {
 
 sneakersRouter.post(
   '/sneakers/photos/:id',
+  authenticateJWT,
   fileMiddleware.fields([
     { name: 'mainPhoto', maxCount: 1 },
     { name: 'two', maxCount: 1 },
@@ -166,83 +168,117 @@ sneakersRouter.post(
   },
 );
 
-sneakersRouter.put('/sneakers/:id', async (req, res) => {
+sneakersRouter.put('/sneakers/:id', authenticateJWT, async (req, res) => {
   try {
     const {
-      mark, model, price, sizeCounts,
+      mark, model, price, description, sizeCounts,
     } = req.body;
     const { id } = req.params;
 
     const markName = typeof mark === 'object' ? mark.name : mark;
-    let markInstance = await Mark.findOne({ where: { name: markName } });
-    const modelName = typeof model === 'object' ? model.name : model;
-    if (!markInstance) {
-      markInstance = await Mark.create({
-        name: markName,
-      });
-    }
+    const markInstance = await Mark.findOne({ where: { name: markName } });
+
     const modelInstance = await ModelSneaker.findOne({ where: { id } });
 
-    const putModal = await modelInstance.update({
-      name: modelName,
+    await modelInstance.update({
+      name: model,
       mark_id: markInstance.id,
+      description,
       price,
     });
 
     if (sizeCounts) {
-      const currentSizes = await Size.findAll({
-        where: { model_sneaker_id: id },
+      const currentSizes = await CountSize.findAll({
+        where: { model_id: id },
+        include: [Size],
       });
-      const currentSizeMap = new Map();
-      for (const currentSize of currentSizes) {
-        currentSizeMap.set(currentSize.size, currentSize);
-      }
 
-      const deletedSizes = [];
-
-      for (const { size } of currentSizes) {
-        if (!sizeCounts.find((item) => item.size === size)) {
-          deletedSizes.push(size);
-        }
-      }
-
-      if (deletedSizes.length > 0) {
-        await Size.destroy({
-          where: { model_sneaker_id: id, size: deletedSizes },
-        });
-      }
+      const currentSizesMap = new Map();
+      currentSizes.forEach((sizeRecord) => {
+        currentSizesMap.set(sizeRecord.Size.size, sizeRecord);
+      });
 
       for (const { size, count } of sizeCounts) {
-        let sizeInstance = currentSizeMap.get(size);
-        if (!sizeInstance) {
-          sizeInstance = await Size.create({
-            model_sneaker_id: id,
-            size,
-            count,
-          });
+        const sizeInstance = await Size.findOne({ where: { size } });
+        console.log(`Размер: ${size}, Size ID: ${sizeInstance.id}`);
+
+        const countSizeRecord = currentSizesMap.get(size);
+
+        if (countSizeRecord) {
+          let countInstance = await Count.findOne({ where: { count } });
+          console.log('Count Instance:', countInstance);
+
+          if (!countInstance) {
+            countInstance = await Count.create({ count });
+            console.log('Создан новый Count:', countInstance);
+          }
+
+          await CountSize.update(
+            { count_id: countInstance.id },
+            { where: { id: countSizeRecord.id } },
+          );
+
+          currentSizesMap.delete(size);
         } else {
-          await sizeInstance.update({
-            count,
+          const newCountInstance = await Count.findOrCreate({
+            where: { count },
           });
+
+          await CountSize.create({
+            size_id: sizeInstance.id,
+            count_id: newCountInstance[0].id,
+            model_id: id,
+          });
+
+          console.log('Создана новая запись в CountSize с count:', newCountInstance[0].id);
         }
+      }
+
+      for (const remainingSize of currentSizesMap.values()) {
+        await remainingSize.destroy();
+        console.log(`Удален размер ID: ${remainingSize.size_id} из модели ID: ${id}`);
       }
     }
 
-    res.status(200).json(putModal);
+    res.status(200).json({ message: 'Модель кроссовок обновлена успешно' });
   } catch (error) {
-    console.error(error);
+    console.error('Ошибка в обработке запроса:', error);
     res.status(500).json({ message: 'Ошибка сервера' });
   }
 });
 
-sneakersRouter.put('/sneakers/photos/:id', async (req, res) => {
-  try {
-    // const { id } = req.params;
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Ошибка сервера' });
-  }
-});
+sneakersRouter.put(
+  '/sneakers/photos/:id',
+  authenticateJWT,
+  fileMiddleware.single('file'),
+  async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { namePhoto } = req.body;
+      console.log(req.file);
+
+      if (!req.file) {
+        return res.status(400).json({ message: 'No file provided.' });
+      }
+
+      const modelPhotoInstance = await Photo.findOne({
+        where: { model_id: id, name: namePhoto },
+      });
+
+      if (!modelPhotoInstance) {
+        return res.status(404).json({ message: 'Photo not found' });
+      }
+
+      modelPhotoInstance.photo = req.file.path.replace('public', '');
+      await modelPhotoInstance.save();
+
+      res.status(200).json({ modelPhotoInstance });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: error.message });
+    }
+  },
+);
 
 sneakersRouter.get('/sneakers/:id', async (req, res) => {
   try {
@@ -283,7 +319,16 @@ sneakersRouter.get('/sneakers/:id', async (req, res) => {
   }
 });
 
-sneakersRouter.delete('/sneakers/:id', async (req, res) => {
+sneakersRouter.get('/sneakers/count', async (req, res) => {
+  try {
+    const allCounts = await Count.findAll();
+    res.status(200).json(allCounts);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+sneakersRouter.delete('/sneakers/:id', authenticateJWT, async (req, res) => {
   try {
     const { id } = req.params;
     await ModelSneaker.destroy({

@@ -2,6 +2,7 @@
 /* eslint-disable consistent-return */
 /* eslint-disable linebreak-style */
 const ordersRouter = require('express').Router();
+const authenticateJWT = require('../../middlewares/jwt');
 
 const {
   OrderItem, Order, ModelSneaker, Size, Count, User, Mark, Status, DeliveryType, DeliveryData,
@@ -35,7 +36,7 @@ ordersRouter.get('/types/delivery/:id', async (req, res) => {
   }
 });
 
-ordersRouter.get('/orders', async (req, res) => {
+ordersRouter.get('/orders', authenticateJWT, async (req, res) => {
   try {
     const allOrders = await Order.findAll({
       include: [
@@ -46,7 +47,6 @@ ordersRouter.get('/orders', async (req, res) => {
         { model: OrderItem, include: [Size, Count, { model: ModelSneaker, include: [Mark] }] },
       ],
     });
-    console.log(allOrders);
     const formattedOrders = allOrders.map((order) => ({
       id: order.id,
       user: order.User.name,
@@ -124,7 +124,7 @@ ordersRouter.post('/orders', async (req, res) => {
   }
 });
 
-ordersRouter.put('/orders/status', async (req, res) => {
+ordersRouter.put('/orders/status', authenticateJWT, async (req, res) => {
   try {
     const { orderId, statusId } = req.body;
 
