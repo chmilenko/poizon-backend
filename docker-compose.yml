@@ -10,7 +10,7 @@ services:
     depends_on:
       - db
     command: >
-      sh -c "npx sequelize-cli db:migrate && npx sequelize-cli db:seed:all && node app.js"
+      sh -c "npx sequelize-cli db:migrate --config db/config/config.js && npx sequelize-cli db:seed:all --config db/config/config.js && node app.js"
 
   db:
     image: postgres:15-alpine
