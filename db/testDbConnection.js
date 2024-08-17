@@ -6,6 +6,7 @@ async function testDbConnection() {
     console.log('БД подключена успешно');
   } catch (error) {
     console.log('Ошибка подключения к БД');
+
     console.log(error.message);
   }
 }

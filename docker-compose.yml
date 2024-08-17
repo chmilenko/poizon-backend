@@ -3,19 +3,24 @@ version: "3.8"
 services:
   app:
     build: .
+    entrypoint: ["/app/entrypoint.sh"]
     ports:
       - "5000:5000"
     env_file:
       - .env
     depends_on:
       - db
-    command: >
-      sh -c "npx sequelize-cli db:migrate --config db/config/config.js && npx sequelize-cli db:seed:all --config db/config/config.js && node app.js"
+    command: npm start
 
   db:
     image: postgres:15-alpine
     env_file:
       - .env
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRESS_HOST: ${DB_HOST}
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
