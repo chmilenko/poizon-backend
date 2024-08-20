@@ -1,0 +1,23 @@
+{
+    "development": {
+      "username": "postgres",
+      "password": "reropi89",
+      "database": "poizon-discount",
+      "host": "db",
+      "dialect": "postgres"
+    },
+    "test": {
+      "username": "postgres",
+      "password": "reropi89",
+      "database": "poizon-discount",
+      "host": "db",
+      "dialect": "postgres"
+    },
+    "production": {
+      "username": "postgres",
+      "password": "reropi89",
+      "database": "poizon-discount",
+      "host": "db",
+      "dialect": "postgres"
+    }
+  }
