@@ -7,7 +7,6 @@
 /* eslint-disable no-console */
 // eslint-disable-next-line linebreak-style
 const sneakersRouter = require('express').Router();
-const { where } = require('sequelize');
 const authenticateJWT = require('../../middlewares/jwt');
 
 const {

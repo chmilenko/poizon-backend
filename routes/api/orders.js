@@ -5,7 +5,17 @@ const ordersRouter = require('express').Router();
 const authenticateJWT = require('../../middlewares/jwt');
 
 const {
-  OrderItem, Order, ModelSneaker, Size, Count, User, Mark, Status, DeliveryType, DeliveryData,
+  OrderItem,
+  Order,
+  ModelSneaker,
+  Size,
+  Count,
+  User,
+  Mark,
+  Status,
+  DeliveryType,
+  DeliveryData,
+  CountSize,
 } = require('../../db/models');
 
 ordersRouter.get('/statuses', async (req, res) => {
@@ -44,7 +54,10 @@ ordersRouter.get('/orders', authenticateJWT, async (req, res) => {
         Status,
         DeliveryType,
         DeliveryData,
-        { model: OrderItem, include: [Size, Count, { model: ModelSneaker, include: [Mark] }] },
+        {
+          model: OrderItem,
+          include: [Size, Count, { model: ModelSneaker, include: [Mark] }],
+        },
       ],
     });
     const formattedOrders = allOrders.map((order) => ({
@@ -58,7 +71,9 @@ ordersRouter.get('/orders', authenticateJWT, async (req, res) => {
         phone: order.DeliveryDatum.phone,
       },
       OrderItems: order.OrderItems.reduce((acc, item) => {
-        const existingItem = acc.find((accItem) => accItem.name === item.ModelSneaker.name);
+        const existingItem = acc.find(
+          (accItem) => accItem.name === item.ModelSneaker.name,
+        );
         if (existingItem) {
           existingItem.sizeCounts.push({
             size: item.Size.size,
@@ -68,10 +83,12 @@ ordersRouter.get('/orders', authenticateJWT, async (req, res) => {
           acc.push({
             name: item.ModelSneaker.name,
             mark: item.ModelSneaker.Mark.name,
-            sizeCounts: [{
-              size: item.Size.size,
-              count: item.Count.count,
-            }],
+            sizeCounts: [
+              {
+                size: item.Size.size,
+                count: item.Count.count,
+              },
+            ],
           });
         }
         return acc;
@@ -86,6 +103,7 @@ ordersRouter.get('/orders', authenticateJWT, async (req, res) => {
 ordersRouter.post('/orders', async (req, res) => {
   try {
     const { user, items, delivery } = req.body.data;
+
     let userInstance = await User.findOne({ where: { name: user } });
     if (!userInstance) {
       userInstance = await User.create({ name: user });
@@ -110,15 +128,45 @@ ordersRouter.post('/orders', async (req, res) => {
     };
 
     await DeliveryData.create(deliveryData);
+    console.log('ITEMS EBANA:', items);
 
-    const orderItems = await Promise.all(items.map((item) => OrderItem.create({
-      order_id: newOrder.id,
-      model_id: item.model_id,
-      size_id: item.size_id,
-      count_id: item.count_id,
-    })));
+    for (const item of items) {
+      
+      const selectCount = await Count.findOne({where: {count: item.count_id}});
 
-    return res.status(201).json({ order: newOrder, items: orderItems, delivery: deliveryData });
+      const countSize = await CountSize.findOne({
+        where: {
+          model_id: item.model_id,
+          size_id: item.size_id,
+        },
+        include: {
+          model: Count,
+          as: 'Count'
+        }
+      });
+
+      if (!countSize || countSize.Count.count < selectCount.count) {
+        return res.status(400).json({ message: 'Недостаточно товара на складе' });
+      }
+      console.log('Prover eptk', countSize.Count.count - selectCount.count);
+      
+      const newCount = await Count.findOne({where : {count: countSize.Count.count - selectCount.count}});
+console.log("NEW COUNT EPTA:", newCount.id);
+
+      await CountSize.update(
+        { count_id: newCount.id },
+        {where: {size_id: item.size_id, model_id: item.model_id}}
+      );
+      
+      await OrderItem.create({
+        order_id: newOrder.id,
+        model_id: item.model_id,
+        size_id: item.size_id,
+        count_id: selectCount.id,
+      });
+    }
+
+    return res.status(201).json({ order: newOrder, delivery: deliveryData });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -135,14 +183,48 @@ ordersRouter.put('/orders/status', authenticateJWT, async (req, res) => {
     }
 
     const statusInstance = await Status.findByPk(statusId);
+    if (!statusInstance) {
+      return res.status(404).json({ message: 'Status not found' });
+    }
+
+    if (statusInstance.name === 'Отклонен') {
+      // Увеличиваем количество в CountSize
+      const orderItems = await OrderItem.findAll({
+        where: { order_id: orderInstance.id },
+      });
+
+      for (const item of orderItems) {
+        const countSize = await CountSize.findOne({
+          where: {
+            model_id: item.model_id,
+            size_id: item.size_id,
+          },
+        });
+
+        if (countSize) {
+          await countSize.update(
+            { count: countSize.count + item.count },
+          );
+        }
+      }
+
+      await OrderItem.destroy({
+        where: { order_id: orderInstance.id },
+      });
+
+      await DeliveryData.destroy({
+        where: { order_id: orderInstance.id },
+      });
+
+      await orderInstance.destroy();
+
+      return res.status(200).json({ message: 'Order has been deleted' });
+    }
 
     orderInstance.status_id = statusId;
     await orderInstance.save();
 
     res.status(200).json(orderInstance);
-    if (!statusInstance) {
-      return res.status(404).json({ message: 'Status not found' });
-    }
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
