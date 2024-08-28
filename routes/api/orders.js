@@ -128,7 +128,6 @@ ordersRouter.post('/orders', async (req, res) => {
     };
 
     await DeliveryData.create(deliveryData);
-    console.log('ITEMS EBANA:', items);
 
     for (const item of items) {
       
@@ -148,11 +147,8 @@ ordersRouter.post('/orders', async (req, res) => {
       if (!countSize || countSize.Count.count < selectCount.count) {
         return res.status(400).json({ message: 'Недостаточно товара на складе' });
       }
-      console.log('Prover eptk', countSize.Count.count - selectCount.count);
       
       const newCount = await Count.findOne({where : {count: countSize.Count.count - selectCount.count}});
-console.log("NEW COUNT EPTA:", newCount.id);
-
       await CountSize.update(
         { count_id: newCount.id },
         {where: {size_id: item.size_id, model_id: item.model_id}}
@@ -188,9 +184,12 @@ ordersRouter.put('/orders/status', authenticateJWT, async (req, res) => {
     }
 
     if (statusInstance.name === 'Отклонен') {
-      // Увеличиваем количество в CountSize
       const orderItems = await OrderItem.findAll({
         where: { order_id: orderInstance.id },
+        include: {
+          model: Count,
+          as: 'Count'
+        }
       });
 
       for (const item of orderItems) {
@@ -199,11 +198,21 @@ ordersRouter.put('/orders/status', authenticateJWT, async (req, res) => {
             model_id: item.model_id,
             size_id: item.size_id,
           },
+          include: {
+            model: Count,
+            as: 'Count'
+          }
         });
-
-        if (countSize) {
-          await countSize.update(
-            { count: countSize.count + item.count },
+        if (countSize) {          
+          const oldCount = await Count.findOne({where: {count:   countSize.Count.count + item.Count.count}})
+          await CountSize.update(
+            { count_id: oldCount.id },
+            {
+              where: {
+                model_id: countSize.model_id,
+                size_id: countSize.size_id
+              }
+            }
           );
         }
       }

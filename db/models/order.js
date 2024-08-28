@@ -24,18 +24,14 @@ module.exports = (sequelize, DataTypes) => {
     user_id: {
       type: DataTypes.INTEGER,
       allowNull: false,
-      // primaryKey: true,
     },
     delivery_type_id: {
       type: DataTypes.INTEGER,
       allowNull: false,
-      // primaryKey: true,
     },
-
     status_id: {
       type: DataTypes.INTEGER,
       allowNull: false,
-      // primaryKey: true,
     },
   }, {
     sequelize,

@@ -1,26 +1,31 @@
-const {
-  Model,
-} = require('sequelize');
+const { Model } = require("sequelize");
 
 module.exports = (sequelize, DataTypes) => {
   class User extends Model {
     static associate({ Order }) {
-      this.hasMany(Order, { foreignKey: 'user_id' });
+      this.hasMany(Order, { foreignKey: "user_id" });
     }
   }
-  User.init({
-    id: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      autoIncrement: true,
-      primaryKey: true,
+  User.init(
+    {
+      id: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        autoIncrement: true,
+        primaryKey: true,
+      },
+      name: {
+        type: DataTypes.TEXT,
+      },
+      chatId: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
     },
-    name: {
-      type: DataTypes.TEXT,
-    },
-  }, {
-    sequelize,
-    modelName: 'User',
-  });
+    {
+      sequelize,
+      modelName: "User",
+    }
+  );
   return User;
 };
