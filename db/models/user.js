@@ -16,13 +16,12 @@ module.exports = (sequelize, DataTypes) => {
       },
       name: {
         type: DataTypes.TEXT,
-        allowNull: true,
-
+        allowNull: false,
         unique: true,
       },
       chatId: {
-        type: DataTypes.STRING,
-        allowNull: true,
+        type: DataTypes.INTEGER,
+        allowNull: false,
         unique: true,
       },
     },

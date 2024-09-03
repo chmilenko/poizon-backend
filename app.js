@@ -76,40 +76,48 @@ app
     console.log(error.message);
   });
 
-  let isProcessing = false;
+let isProcessing = false;
 
-  bot.on('message', async (msg) => {
-    if (isProcessing) return;  // Игнорировать последующие сообщения
-    isProcessing = true;
+bot.on('message', async (msg) => {
+  if (isProcessing) return; // Игнорировать последующие сообщения
+  isProcessing = true;
 
-    const chatId = msg.chat.id;
-    const { text } = msg;
+  const chatId = msg.chat.id;
+  const { text } = msg;
 
-    if (text === '/start') {
-      const userName = msg.from.username || msg.from.first_name;
+  if (text === '/start') {
+    const userName = msg.from.username || msg.from.first_name;
 
-      try {
-        let userInstance = await User.findOne({ where: { name: userName } });
+    try {
+      let userInstance = await User.findOne({ where: { name: userName } });
 
-        if (!userInstance) {
-          userInstance = await User.create({ name: userName, chatId });
-        } else {
-          userInstance.chatId = chatId;
-          await userInstance.save();
-        }
-
-        await bot.sendMessage(chatId, hello, {
-          reply_markup: {
-            keyboard: [
-              [{ text: 'В магазин', web_app: { url: `${webAppUrl}` } }],
-            ],
-          },
-        });
-      } catch (error) {
-        console.error('Ошибка при работе с пользователем:', error);
-        await bot.sendMessage(chatId, 'Произошла ошибка. Попробуйте снова позже.');
+      if (!userInstance) {
+        userInstance = await User.create({ name: userName, chatId });
+      } else {
+        await User.update(
+          {chatId},
+          {
+            where: {
+              name: userInstance.name
+            }
+          }
+        )
+        userInstance.chatId = chatId;
+        await userInstance.save();
       }
-    }
 
-    isProcessing = false; // Завершить обработку
-  });
+      await bot.sendMessage(chatId, hello, {
+        reply_markup: {
+          keyboard: [
+            [{ text: 'В магазин', web_app: { url: `${webAppUrl}` } }],
+          ],
+        },
+      });
+    } catch (error) {
+      console.error('Ошибка при работе с пользователем:', error);
+      await bot.sendMessage(chatId, 'Произошла ошибка. Попробуйте снова позже.');
+    }
+  }
+
+  isProcessing = false; // Завершить обработку
+});
