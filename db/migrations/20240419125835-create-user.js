@@ -10,11 +10,13 @@ module.exports = {
       },
       name: {
         type: Sequelize.TEXT,
-        allowNull: true,
+        allowNull: false,
+        unique: true,
       },
       chatId: {
         type: Sequelize.STRING,
-        allowNull: true,
+        allowNull: false,
+        unique: true,
       },
       createdAt: {
         allowNull: false,

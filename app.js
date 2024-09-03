@@ -76,28 +76,40 @@ app
     console.log(error.message);
   });
 
-bot.on('message', async (msg) => {
-  const chatId = msg.chat.id;
-  const { text } = msg;
+  let isProcessing = false;
 
-  if (text === '/start') {
-    const userName = msg.from.username || msg.from.first_name;
+  bot.on('message', async (msg) => {
+    if (isProcessing) return;  // Игнорировать последующие сообщения
+    isProcessing = true;
 
-    let userInstance = await User.findOne({ where: { name: userName } });
+    const chatId = msg.chat.id;
+    const { text } = msg;
 
-    if (!userInstance) {
-      userInstance = await User.create({ name: userName, chatId });
-    } else {
-      userInstance.chatId = chatId;
-      await userInstance.save();
+    if (text === '/start') {
+      const userName = msg.from.username || msg.from.first_name;
+
+      try {
+        let userInstance = await User.findOne({ where: { name: userName } });
+
+        if (!userInstance) {
+          userInstance = await User.create({ name: userName, chatId });
+        } else {
+          userInstance.chatId = chatId;
+          await userInstance.save();
+        }
+
+        await bot.sendMessage(chatId, hello, {
+          reply_markup: {
+            keyboard: [
+              [{ text: 'В магазин', web_app: { url: `${webAppUrl}` } }],
+            ],
+          },
+        });
+      } catch (error) {
+        console.error('Ошибка при работе с пользователем:', error);
+        await bot.sendMessage(chatId, 'Произошла ошибка. Попробуйте снова позже.');
+      }
     }
 
-    await bot.sendMessage(chatId, hello, {
-      reply_markup: {
-        keyboard: [
-          [{ text: 'В магазин', web_app: { url: `${webAppUrl}` } }],
-        ],
-      },
-    });
-  }
-});
+    isProcessing = false; // Завершить обработку
+  });

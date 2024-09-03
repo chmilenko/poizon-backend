@@ -6,7 +6,6 @@
 /* eslint-disable linebreak-style */
 const ordersRouter = require('express').Router();
 const authenticateJWT = require('../../middlewares/jwt');
-const bot = require('../../bot');
 
 const {
   OrderItem,
@@ -170,11 +169,7 @@ ordersRouter.post('/orders', async (req, res) => {
         count_id: selectCount.id,
       });
     }
-    if (userInstance.chatId) {
-      const message =
-        'Спасибо за ваш заказ! Наш менеджер свяжется с вами в ближайшее время. Статус вашего заказа: Новый.';
-      await bot.sendMessage(userInstance.chatId, message);
-    }
+
     return res.status(201).json({ order: newOrder, delivery: deliveryData });
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -246,12 +241,6 @@ ordersRouter.put('/orders/status', authenticateJWT, async (req, res) => {
 
       notificationMessage =
         'Ваш заказ был отменен. Надеемся на дальнейшее сотрудничество!';
-      if (orderInstance.user_id) {
-        const userInstance = await User.findByPk(orderInstance.user_id);
-        if (userInstance.chatId) {
-          await bot.sendMessage(userInstance.chatId, notificationMessage);
-        }
-      }
 
       return res.status(200).json({ message: 'Order has been deleted' });
     }
