@@ -1,9 +1,9 @@
-const userRouter = require("express").Router();
-const { User } = require("../../db/models");
+const userRouter = require('express').Router();
+const { User } = require('../../db/models');
 
-userRouter.get("/users", async (req, res) => {
+userRouter.get('/users', async (req, res) => {
   try {
-    const users = User.findAll();
+    const users = await User.findAll();
     res.status(201).json(users);
   } catch (error) {
     res.status(500).json(error.message);

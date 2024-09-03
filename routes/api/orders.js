@@ -1,8 +1,12 @@
+/* eslint-disable operator-linebreak */
+/* eslint-disable no-restricted-syntax */
+/* eslint-disable no-await-in-loop */
 /* eslint-disable max-len */
 /* eslint-disable consistent-return */
 /* eslint-disable linebreak-style */
 const ordersRouter = require('express').Router();
 const authenticateJWT = require('../../middlewares/jwt');
+const bot = require('../../bot');
 
 const {
   OrderItem,
@@ -130,8 +134,9 @@ ordersRouter.post('/orders', async (req, res) => {
     await DeliveryData.create(deliveryData);
 
     for (const item of items) {
-      
-      const selectCount = await Count.findOne({where: {count: item.count_id}});
+      const selectCount = await Count.findOne({
+        where: { count: item.count_id },
+      });
 
       const countSize = await CountSize.findOne({
         where: {
@@ -140,20 +145,24 @@ ordersRouter.post('/orders', async (req, res) => {
         },
         include: {
           model: Count,
-          as: 'Count'
-        }
+          as: 'Count',
+        },
       });
 
       if (!countSize || countSize.Count.count < selectCount.count) {
-        return res.status(400).json({ message: 'Недостаточно товара на складе' });
+        return res
+          .status(400)
+          .json({ message: 'Недостаточно товара на складе' });
       }
-      
-      const newCount = await Count.findOne({where : {count: countSize.Count.count - selectCount.count}});
+
+      const newCount = await Count.findOne({
+        where: { count: countSize.Count.count - selectCount.count },
+      });
       await CountSize.update(
         { count_id: newCount.id },
-        {where: {size_id: item.size_id, model_id: item.model_id}}
+        { where: { size_id: item.size_id, model_id: item.model_id } },
       );
-      
+
       await OrderItem.create({
         order_id: newOrder.id,
         model_id: item.model_id,
@@ -161,7 +170,11 @@ ordersRouter.post('/orders', async (req, res) => {
         count_id: selectCount.id,
       });
     }
-
+    if (userInstance.chatId) {
+      const message =
+        'Спасибо за ваш заказ! Наш менеджер свяжется с вами в ближайшее время. Статус вашего заказа: Новый.';
+      await bot.sendMessage(userInstance.chatId, message);
+    }
     return res.status(201).json({ order: newOrder, delivery: deliveryData });
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -183,13 +196,15 @@ ordersRouter.put('/orders/status', authenticateJWT, async (req, res) => {
       return res.status(404).json({ message: 'Status not found' });
     }
 
+    let notificationMessage = '';
+
     if (statusInstance.name === 'Отклонен') {
       const orderItems = await OrderItem.findAll({
         where: { order_id: orderInstance.id },
         include: {
           model: Count,
-          as: 'Count'
-        }
+          as: 'Count',
+        },
       });
 
       for (const item of orderItems) {
@@ -200,19 +215,21 @@ ordersRouter.put('/orders/status', authenticateJWT, async (req, res) => {
           },
           include: {
             model: Count,
-            as: 'Count'
-          }
+            as: 'Count',
+          },
         });
-        if (countSize) {          
-          const oldCount = await Count.findOne({where: {count:   countSize.Count.count + item.Count.count}})
+        if (countSize) {
+          const oldCount = await Count.findOne({
+            where: { count: countSize.Count.count + item.Count.count },
+          });
           await CountSize.update(
             { count_id: oldCount.id },
             {
               where: {
                 model_id: countSize.model_id,
-                size_id: countSize.size_id
-              }
-            }
+                size_id: countSize.size_id,
+              },
+            },
           );
         }
       }
@@ -227,11 +244,35 @@ ordersRouter.put('/orders/status', authenticateJWT, async (req, res) => {
 
       await orderInstance.destroy();
 
+      notificationMessage =
+        'Ваш заказ был отменен. Надеемся на дальнейшее сотрудничество!';
+      if (orderInstance.user_id) {
+        const userInstance = await User.findByPk(orderInstance.user_id);
+        if (userInstance.chatId) {
+          await bot.sendMessage(userInstance.chatId, notificationMessage);
+        }
+      }
+
       return res.status(200).json({ message: 'Order has been deleted' });
     }
 
     orderInstance.status_id = statusId;
     await orderInstance.save();
+
+    if (statusInstance.name === 'В работе') {
+      notificationMessage =
+        'Ваш заказ в работе. Мы уведомим вас, когда заказ будет завершён.';
+    } else if (statusInstance.name === 'Выполнен') {
+      notificationMessage =
+        'Спасибо за ваш заказ! Ваш заказ выполнен. Надеемся, вам понравится наш продукт!';
+    }
+
+    if (orderInstance.user_id && notificationMessage !== '') {
+      const userInstance = await User.findByPk(orderInstance.user_id);
+      if (userInstance.chatId) {
+        await bot.sendMessage(userInstance.chatId, notificationMessage);
+      }
+    }
 
     res.status(200).json(orderInstance);
   } catch (error) {
