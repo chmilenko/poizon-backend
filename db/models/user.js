@@ -19,7 +19,7 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: false,
         unique: true,
       },
-      chatId: {
+      chatid: {
         type: DataTypes.INTEGER,
         allowNull: false,
         unique: true,
