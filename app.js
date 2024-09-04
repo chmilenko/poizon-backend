@@ -92,18 +92,18 @@ bot.on('message', async (msg) => {
       let userInstance = await User.findOne({ where: { name: userName } });
 
       if (!userInstance) {
-        userInstance = await User.create({ name: userName, chatId });
+        userInstance = await User.create({ name: userName, chatid: chatId });
       } else {
         await User.update(
-          {chatId},
+          { chatid: chatId },
           {
             where: {
-              name: userInstance.name
-            }
-          }
-        )
-        userInstance.chatId = chatId;
-        await userInstance.save();
+              name: userInstance.name,
+            },
+          },
+        );
+        // userInstance.chatId = chatId;
+        // await userInstance.save();
       }
 
       await bot.sendMessage(chatId, hello, {
