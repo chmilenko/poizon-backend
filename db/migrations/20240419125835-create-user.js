@@ -13,8 +13,8 @@ module.exports = {
         allowNull: false,
         unique: true,
       },
-      chatId: {
-        type: Sequelize.STRING,
+      chatid: {
+        type: Sequelize.INTEGER,
         allowNull: false,
         unique: true,
       },

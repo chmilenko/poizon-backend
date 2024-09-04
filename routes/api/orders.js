@@ -241,6 +241,12 @@ ordersRouter.put('/orders/status', authenticateJWT, async (req, res) => {
 
       notificationMessage =
         'Ваш заказ был отменен. Надеемся на дальнейшее сотрудничество!';
+      if (orderInstance.user_id) {
+        const userInstance = await User.findByPk(orderInstance.user_id);
+        if (userInstance.chatId) {
+          await bot.sendMessage(userInstance.chatId, notificationMessage);
+        }
+      }
 
       return res.status(200).json({ message: 'Order has been deleted' });
     }
