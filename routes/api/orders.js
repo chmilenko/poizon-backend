@@ -108,10 +108,10 @@ ordersRouter.post('/orders', async (req, res) => {
   try {
     const { user, items, delivery } = req.body.data;
 
-    let userInstance = await User.findOne({ where: { name: user } });
-    if (!userInstance) {
-      userInstance = await User.create({ name: user, chatid: 4242343 });
-    }
+    const userInstance = await User.findOne({ where: { name: user } });
+    // if (!userInstance) {
+    //   userInstance = await User.create({ name: user, chatid: 4242343 });
+    // }
 
     const newStatus = await Status.findOne({ where: { name: 'Новый' } });
     if (!newStatus) {
@@ -246,7 +246,7 @@ ordersRouter.put('/orders/status', authenticateJWT, async (req, res) => {
 
       notificationMessage =
         'Ваш заказ был отменен. Надеемся на дальнейшее сотрудничество!';
-      await bot.sendMessage(userInstance.chatId, notificationMessage);
+      await bot.sendMessage(userInstance.chatid, notificationMessage);
 
       return res.status(200).json({ message: 'Order has been deleted' });
     }
@@ -262,7 +262,7 @@ ordersRouter.put('/orders/status', authenticateJWT, async (req, res) => {
         'Спасибо за ваш заказ! Ваш заказ выполнен. Надеемся, вам понравится наш продукт!';
     }
 
-        await bot.sendMessage(userInstance.chatId, notificationMessage);
+    await bot.sendMessage(userInstance.chatid, notificationMessage);
 
     res.status(200).json(orderInstance);
   } catch (error) {
