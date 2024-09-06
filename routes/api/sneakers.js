@@ -118,7 +118,6 @@ sneakersRouter.post('/sneakers', authenticateJWT, async (req, res) => {
     }
     return res.status(201).json(modelInstance);
   } catch (error) {
-    console.log(error);
     res.status(500).json({ message: error.message });
   }
 });
@@ -199,17 +198,14 @@ sneakersRouter.put('/sneakers/:id', authenticateJWT, async (req, res) => {
 
       for (const { size, count } of sizeCounts) {
         const sizeInstance = await Size.findOne({ where: { size } });
-        console.log(`Размер: ${size}, Size ID: ${sizeInstance.id}`);
 
         const countSizeRecord = currentSizesMap.get(size);
 
         if (countSizeRecord) {
           let countInstance = await Count.findOne({ where: { count } });
-          console.log('Count Instance:', countInstance);
 
           if (!countInstance) {
             countInstance = await Count.create({ count });
-            console.log('Создан новый Count:', countInstance);
           }
 
           await CountSize.update(
@@ -228,14 +224,11 @@ sneakersRouter.put('/sneakers/:id', authenticateJWT, async (req, res) => {
             count_id: newCountInstance[0].id,
             model_id: id,
           });
-
-          console.log('Создана новая запись в CountSize с count:', newCountInstance[0].id);
         }
       }
 
       for (const remainingSize of currentSizesMap.values()) {
         await remainingSize.destroy();
-        console.log(`Удален размер ID: ${remainingSize.size_id} из модели ID: ${id}`);
       }
     }
 
@@ -254,7 +247,6 @@ sneakersRouter.put(
     try {
       const { id } = req.params;
       const { namePhoto } = req.body;
-      console.log(req.file);
 
       if (!req.file) {
         return res.status(400).json({ message: 'No file provided.' });

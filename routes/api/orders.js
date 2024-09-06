@@ -6,6 +6,7 @@
 /* eslint-disable linebreak-style */
 const ordersRouter = require('express').Router();
 const authenticateJWT = require('../../middlewares/jwt');
+const bot = require('../../bot');
 
 const {
   OrderItem,
@@ -109,7 +110,7 @@ ordersRouter.post('/orders', async (req, res) => {
 
     let userInstance = await User.findOne({ where: { name: user } });
     if (!userInstance) {
-      userInstance = await User.create({ name: user });
+      userInstance = await User.create({ name: user, chatid: 4242343 });
     }
 
     const newStatus = await Status.findOne({ where: { name: 'Новый' } });
@@ -169,6 +170,9 @@ ordersRouter.post('/orders', async (req, res) => {
         count_id: selectCount.id,
       });
     }
+
+    const message = 'Ваш заказ успешно создан, и наш менеджер с вами свяжется в ближайшее время.';
+    await bot.sendMessage(userInstance.chatid, message);
 
     return res.status(201).json({ order: newOrder, delivery: deliveryData });
   } catch (error) {
