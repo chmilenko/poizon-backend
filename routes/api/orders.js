@@ -185,6 +185,7 @@ ordersRouter.put('/orders/status', authenticateJWT, async (req, res) => {
     const { orderId, statusId } = req.body;
 
     const orderInstance = await Order.findByPk(orderId);
+    const userInstance = await User.findByPk(orderInstance.user_id);
 
     if (!orderInstance) {
       return res.status(404).json({ message: 'Order not found' });
@@ -245,12 +246,7 @@ ordersRouter.put('/orders/status', authenticateJWT, async (req, res) => {
 
       notificationMessage =
         'Ваш заказ был отменен. Надеемся на дальнейшее сотрудничество!';
-      if (orderInstance.user_id) {
-        const userInstance = await User.findByPk(orderInstance.user_id);
-        if (userInstance.chatId) {
-          await bot.sendMessage(userInstance.chatId, notificationMessage);
-        }
-      }
+      await bot.sendMessage(userInstance.chatId, notificationMessage);
 
       return res.status(200).json({ message: 'Order has been deleted' });
     }
@@ -266,12 +262,7 @@ ordersRouter.put('/orders/status', authenticateJWT, async (req, res) => {
         'Спасибо за ваш заказ! Ваш заказ выполнен. Надеемся, вам понравится наш продукт!';
     }
 
-    if (orderInstance.user_id && notificationMessage !== '') {
-      const userInstance = await User.findByPk(orderInstance.user_id);
-      if (userInstance.chatId) {
         await bot.sendMessage(userInstance.chatId, notificationMessage);
-      }
-    }
 
     res.status(200).json(orderInstance);
   } catch (error) {
