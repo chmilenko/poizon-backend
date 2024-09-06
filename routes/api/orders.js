@@ -109,9 +109,6 @@ ordersRouter.post('/orders', async (req, res) => {
     const { user, items, delivery } = req.body.data;
 
     const userInstance = await User.findOne({ where: { name: user } });
-    // if (!userInstance) {
-    //   userInstance = await User.create({ name: user, chatid: 4242343 });
-    // }
 
     const newStatus = await Status.findOne({ where: { name: 'Новый' } });
     if (!newStatus) {
