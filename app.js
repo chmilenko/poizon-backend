@@ -6,7 +6,7 @@ const express = require('express');
 const cors = require('cors');
 const testDbConnection = require('./db/testDbConnection');
 const config = require('./config/serverConfig');
-const bot = require('./bot'); // Импортируем бота
+const bot = require('./bot');
 
 const sneakerRouter = require('./routes/api/sneakers');
 const adminRouter = require('./routes/api/admin');
