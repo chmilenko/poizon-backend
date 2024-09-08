@@ -132,7 +132,6 @@ bot.on('callback_query', async (callbackQuery) => {
       await bot.sendMessage(chatId, 'Неизвестный запрос!');
   }
 
-  // Уведомляем Telegram, что запрос был обработан
   await bot.answerCallbackQuery(callbackQuery.id);
 });
 

@@ -176,14 +176,15 @@ sneakersRouter.put('/sneakers/:id', authenticateJWT, async (req, res) => {
     const markName = typeof mark === 'object' ? mark.name : mark;
     const markInstance = await Mark.findOne({ where: { name: markName } });
 
-    const modelInstance = await ModelSneaker.findOne({ where: { id } });
-
-    await modelInstance.update({
-      name: model,
-      mark_id: markInstance.id,
-      description,
-      price,
-    });
+    await ModelSneaker.update(
+      {
+        name: model,
+        mark_id: markInstance.id,
+        description,
+        price,
+      },
+      { where: { id } },
+    );
 
     if (sizeCounts) {
       const currentSizes = await CountSize.findAll({
