@@ -109,7 +109,9 @@ ordersRouter.post('/orders', async (req, res) => {
     const { user, items, delivery } = req.body.data;
 
     const userInstance = await User.findOne({ where: { name: user } });
-
+    if (!userInstance) {
+      return res.status(404).json({ message: 'Пользователь не найден' });
+    }
     const newStatus = await Status.findOne({ where: { name: 'Новый' } });
     if (!newStatus) {
       return res.status(500).json({ message: 'Статус "Новый" не найден' });
@@ -169,7 +171,7 @@ ordersRouter.post('/orders', async (req, res) => {
     }
 
     const message = 'Ваш заказ успешно создан, и наш менеджер с вами свяжется в ближайшее время.';
-    await bot.sendMessage(userInstance.chatid, message);
+    await bot.sendMessage(userInstance.chatid, 'https://img.freepik.com/free-photo/3d-fox-cartoon-illustration_23-2151395236.jpg?size=338&ext=jpg&ga=GA1.1.2008272138.1725753600&semt=ais_hybrid', { caption: message });
 
     return res.status(201).json({ order: newOrder, delivery: deliveryData });
   } catch (error) {
@@ -243,7 +245,7 @@ ordersRouter.put('/orders/status', authenticateJWT, async (req, res) => {
 
       notificationMessage =
         'Ваш заказ был отменен. Надеемся на дальнейшее сотрудничество!';
-      await bot.sendMessage(userInstance.chatid, notificationMessage);
+      await bot.sendMessage(userInstance.chatid, 'https://img.freepik.com/free-photo/3d-fox-cartoon-illustration_23-2151395236.jpg?size=338&ext=jpg&ga=GA1.1.2008272138.1725753600&semt=ais_hybrid', { caption: notificationMessage });
 
       return res.status(200).json({ message: 'Order has been deleted' });
     }
@@ -259,7 +261,7 @@ ordersRouter.put('/orders/status', authenticateJWT, async (req, res) => {
         'Спасибо за ваш заказ! Ваш заказ выполнен. Надеемся, вам понравится наш продукт!';
     }
 
-    await bot.sendMessage(userInstance.chatid, notificationMessage);
+    await bot.sendMessage(userInstance.chatid, 'https://img.freepik.com/free-photo/3d-fox-cartoon-illustration_23-2151395236.jpg?size=338&ext=jpg&ga=GA1.1.2008272138.1725753600&semt=ais_hybrid', { caption: notificationMessage });
 
     res.status(200).json(orderInstance);
   } catch (error) {
