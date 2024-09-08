@@ -171,7 +171,7 @@ ordersRouter.post('/orders', async (req, res) => {
     }
 
     const message = 'Ваш заказ успешно создан, и наш менеджер с вами свяжется в ближайшее время.';
-    await bot.sendMessage(userInstance.chatid, 'https://img.freepik.com/free-photo/3d-fox-cartoon-illustration_23-2151395236.jpg?size=338&ext=jpg&ga=GA1.1.2008272138.1725753600&semt=ais_hybrid', { caption: message });
+    await bot.sendMessage(userInstance.chatid, 'https://img.freepik.com/free-photo/3d-fox-cartoon-illustration_23-2151395236.jpg?size=338&ext=jpg&ga=GA1.1.2008272138.1725753600&semt=ais_hybrid', caption: message );
 
     return res.status(201).json({ order: newOrder, delivery: deliveryData });
   } catch (error) {
@@ -245,7 +245,7 @@ ordersRouter.put('/orders/status', authenticateJWT, async (req, res) => {
 
       notificationMessage =
         'Ваш заказ был отменен. Надеемся на дальнейшее сотрудничество!';
-      await bot.sendMessage(userInstance.chatid, 'https://img.freepik.com/free-photo/3d-fox-cartoon-illustration_23-2151395236.jpg?size=338&ext=jpg&ga=GA1.1.2008272138.1725753600&semt=ais_hybrid', { caption: notificationMessage });
+      await bot.sendMessage(userInstance.chatid, 'https://img.freepik.com/free-photo/3d-fox-cartoon-illustration_23-2151395236.jpg?size=338&ext=jpg&ga=GA1.1.2008272138.1725753600&semt=ais_hybrid', notificationMessage);
 
       return res.status(200).json({ message: 'Order has been deleted' });
     }
