@@ -14,6 +14,7 @@ const {
 } = require('../../db/models');
 
 const fileMiddleware = require('../../middlewares/fileUpload');
+const { where } = require('sequelize');
 
 sneakersRouter.get('/sneakers/mark', async (req, res) => {
   try {
@@ -120,9 +121,7 @@ sneakersRouter.post('/sneakers', authenticateJWT, async (req, res) => {
 
     for (const { size, count } of sizeCounts) {
       let sizeInstance = await Size.findOne({ where: { size } });
-      if (!sizeInstance) {
-        sizeInstance = await Size.create({ size });
-      }
+      let countInstance = await Count.findOne({where: {count}})
 
       let existingCountSize = await CountSize.findOne({
         where: { model_id: modelInstance.id, size_id: sizeInstance.id },
@@ -132,7 +131,7 @@ sneakersRouter.post('/sneakers', authenticateJWT, async (req, res) => {
         await CountSize.create({
           model_id: modelInstance.id,
           size_id: sizeInstance.id,
-          count,
+          count: countInstance.id,
         });
       }
     }
