@@ -75,6 +75,24 @@ sneakersRouter.post('/sneakers', authenticateJWT, async (req, res) => {
       description,
     } = req.body;
 
+    // Проверка на наличие обязательных параметров
+    if (!mark) {
+      return res.status(400).json({ message: 'Вы не выбрали бренд' });
+    }
+    if (!model) {
+      return res.status(400).json({ message: 'Вы не указали модель' });
+    }
+    if (price === undefined || price === null) { // Проверка на наличие цены
+      return res.status(400).json({ message: 'Вы не указали цену' });
+    }
+    if (!sizeCounts || sizeCounts.length === 0) { // Проверка на наличие размеров
+      return res.status(400).json({ message: 'Вы не указали размеры с количеством' });
+    }
+    // Дополнительная проверка на описание, если это необходимо
+    if (!description) {
+      return res.status(400).json({ message: 'Вы не указали описание' });
+    }
+
     const markName = typeof mark === 'object' ? mark.name : mark;
 
     let markInstance = await Mark.findOne({ where: { name: markName } });
@@ -84,11 +102,13 @@ sneakersRouter.post('/sneakers', authenticateJWT, async (req, res) => {
         name: markName,
       });
     }
+
     const modelName = typeof model === 'object' ? model.name : model;
 
     let modelInstance = await ModelSneaker.findOne({
       where: { name: modelName },
     });
+
     if (!modelInstance) {
       modelInstance = await ModelSneaker.create({
         name: modelName,
@@ -112,10 +132,11 @@ sneakersRouter.post('/sneakers', authenticateJWT, async (req, res) => {
         await CountSize.create({
           model_id: modelInstance.id,
           size_id: sizeInstance.id,
-          count_id: count,
+          count,
         });
       }
     }
+
     return res.status(201).json(modelInstance);
   } catch (error) {
     res.status(500).json({ message: error.message });
