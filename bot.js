@@ -71,7 +71,7 @@ bot.on('message', async (msg) => {
           {
             where: {
               name: userInstance.name,
-            },
+            },s
           },
         );
       }
@@ -79,7 +79,7 @@ bot.on('message', async (msg) => {
       await bot.sendMessage(chatId, hello, {
         reply_markup: {
           keyboard: [
-            [{ text: '👟 В магазин 👟', web_app: { url: webAppUrl } }],
+            // [{ text: '👟 В магазин 👟', web_app: { url: webAppUrl } }],
             [{ text: '❓ FAQ ❓' }],
             [{ text: '👨‍💻 Поддержка 👨‍💻' }],
             [{ text: '👨‍👩‍👦‍👦 Канал 👨‍👩‍👦‍👦' }],
