@@ -22,6 +22,11 @@ const {
   CountSize,
 } = require('../../db/models');
 
+function generateOrderId() {
+  // Генерируем случайное число от 10000 до 99999
+  return Math.floor(Math.random() * 90000) + 10000;
+}
+
 ordersRouter.get('/statuses', async (req, res) => {
   try {
     const statuses = await Status.findAll();
@@ -108,21 +113,27 @@ ordersRouter.post('/orders', async (req, res) => {
   try {
     const { user, items, delivery } = req.body.data;
 
+    // Проверка существования пользователя
     const userInstance = await User.findOne({ where: { name: user } });
     if (!userInstance) {
       return res.status(404).json({ message: 'Пользователь не найден' });
     }
+
+    // Получение статуса "Новый"
     const newStatus = await Status.findOne({ where: { name: 'Новый' } });
     if (!newStatus) {
       return res.status(500).json({ message: 'Статус "Новый" не найден' });
     }
 
+    // Создание нового заказа
     const newOrder = await Order.create({
+      id: generateOrderId(),
       user_id: userInstance.id,
       status_id: newStatus.id,
       delivery_type_id: delivery.type_id,
     });
 
+    // Подготовка данных для доставки
     const deliveryData = {
       order_id: newOrder.id,
       fullName: delivery.data.fullName,
@@ -132,36 +143,57 @@ ordersRouter.post('/orders', async (req, res) => {
 
     await DeliveryData.create(deliveryData);
 
+    // Массив для хранения информации о моделях
+    const orderedItems = [];
+
     for (const item of items) {
-      const selectCount = await Count.findOne({
-        where: { count: item.count_id },
-      });
+      const selectCount = await Count.findOne({ where: { count: item.count_id } });
 
       const countSize = await CountSize.findOne({
         where: {
           model_id: item.model_id,
           size_id: item.size_id,
         },
-        include: {
-          model: Count,
-          as: 'Count',
-        },
+        include: [
+          {
+            model: Count,
+            as: 'Count',
+          },
+          {
+            model: ModelSneaker,
+            as: 'ModelSneaker',
+            include: [{ model: Mark, as: 'Mark' }],
+          },
+          {
+            model: Size,
+            as: 'Size',
+          },
+        ],
       });
-
+      console.log();
+      // Проверка на наличие товара на складе
       if (!countSize || countSize.Count.count < selectCount.count) {
-        return res
-          .status(400)
-          .json({ message: 'Недостаточно товара на складе' });
+        return res.status(400).json({ message: 'Недостаточно товара на складе' });
       }
 
       const newCount = await Count.findOne({
         where: { count: countSize.Count.count - selectCount.count },
       });
+
+      // Обновление размера счета
       await CountSize.update(
         { count_id: newCount.id },
         { where: { size_id: item.size_id, model_id: item.model_id } },
       );
 
+      // Добавляем информацию о модели в массив
+      orderedItems.push({
+        mark: countSize.ModelSneaker.Mark.name,
+        model: countSize.ModelSneaker.name,
+        size: countSize.Size.size,
+        count: countSize.Count.count,
+      });
+      // Создание записи в OrderItem
       await OrderItem.create({
         order_id: newOrder.id,
         model_id: item.model_id,
@@ -169,13 +201,46 @@ ordersRouter.post('/orders', async (req, res) => {
         count_id: selectCount.id,
       });
     }
+    const typeDelivery = await DeliveryType.findByPk(delivery.type_id);
 
-    const message = 'Ваш заказ успешно создан, и наш менеджер с вами свяжется в ближайшее время.';
-    await bot.sendMessage(userInstance.chatid, 'https://img.freepik.com/free-photo/3d-fox-cartoon-illustration_23-2151395236.jpg?size=338&ext=jpg&ga=GA1.1.2008272138.1725753600&semt=ais_hybrid', caption: message );
+    // Форматирование информации о моделях, с проверками
+    const itemDetails = orderedItems.length
+      ? orderedItems.map((item) => `  Модель 👟: ${item.mark} ${item.model}, Размер: ${item.size} EUR, Количество: ${item.count}`).join('\n')
+      : 'Нет моделей в заказе.';
+
+    const deliveryLines = [];
+    if (typeDelivery.name) {
+      deliveryLines.push(` Тип доставки 🚗: ${typeDelivery.name}`);
+    }
+    if (deliveryData.fullName) {
+      deliveryLines.push(`   ФИО 👑: ${deliveryData.fullName}`);
+    }
+    if (deliveryData.address) {
+      deliveryLines.push(`   Адрес 🏠: ${deliveryData.address}`);
+    }
+    if (deliveryData.phone) {
+      deliveryLines.push(`   Телефон 📞: ${deliveryData.phone}`);
+    }
+
+    const deliveryInfo = deliveryLines.length > 0 ? deliveryLines.join('\n') : 'Данные о доставке не указаны.';
+
+    const message = ` Ваш заказ № ${newOrder.id} успешно создан ✨
+  
+  Данные о заказе 📌:
+  ${deliveryInfo}
+  
+  Модели в заказе 📦:
+  ${itemDetails}
+  
+  Наш менеджер свяжется с вами в ближайшее время 📱`;
+
+    // Отправка сообщения пользователю через бота
+    await bot.sendMessage(userInstance.chatid, message);
 
     return res.status(201).json({ order: newOrder, delivery: deliveryData });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error(error); // Для отладки
+    res.status(500).json({ message: 'Произошла ошибка при создании заказа.' });
   }
 });
 
@@ -244,8 +309,8 @@ ordersRouter.put('/orders/status', authenticateJWT, async (req, res) => {
       await orderInstance.destroy();
 
       notificationMessage =
-        'Ваш заказ был отменен. Надеемся на дальнейшее сотрудничество!';
-      await bot.sendMessage(userInstance.chatid, 'https://img.freepik.com/free-photo/3d-fox-cartoon-illustration_23-2151395236.jpg?size=338&ext=jpg&ga=GA1.1.2008272138.1725753600&semt=ais_hybrid', notificationMessage);
+        `Ваш заказ № ${orderInstance.id} был отменен. Надеемся на дальнейшее сотрудничество!`;
+      await bot.sendMessage(userInstance.chatid, notificationMessage);
 
       return res.status(200).json({ message: 'Order has been deleted' });
     }
@@ -255,13 +320,13 @@ ordersRouter.put('/orders/status', authenticateJWT, async (req, res) => {
 
     if (statusInstance.name === 'В работе') {
       notificationMessage =
-        'Ваш заказ в работе. Мы уведомим вас, когда заказ будет завершён.';
+        `Ваш заказ № ${orderInstance.id} в работе. Мы уведомим вас, когда заказ будет завершён.`;
     } else if (statusInstance.name === 'Выполнен') {
       notificationMessage =
         'Спасибо за ваш заказ! Ваш заказ выполнен. Надеемся, вам понравится наш продукт!';
     }
 
-    await bot.sendMessage(userInstance.chatid, 'https://img.freepik.com/free-photo/3d-fox-cartoon-illustration_23-2151395236.jpg?size=338&ext=jpg&ga=GA1.1.2008272138.1725753600&semt=ais_hybrid', { caption: notificationMessage });
+    await bot.sendMessage(userInstance.chatid, notificationMessage);
 
     res.status(200).json(orderInstance);
   } catch (error) {
