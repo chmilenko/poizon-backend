@@ -113,19 +113,16 @@ ordersRouter.post('/orders', async (req, res) => {
   try {
     const { user, items, delivery } = req.body.data;
 
-    // Проверка существования пользователя
     const userInstance = await User.findOne({ where: { name: user } });
-    if (!userInstance) {
-      return res.status(404).json({ message: 'Пользователь не найден' });
-    }
+    // if (!userInstance) {
+    //   return res.status(404).json({ message: 'Пользователь не найден' });
+    // }
 
-    // Получение статуса "Новый"
     const newStatus = await Status.findOne({ where: { name: 'Новый' } });
     if (!newStatus) {
       return res.status(500).json({ message: 'Статус "Новый" не найден' });
     }
 
-    // Создание нового заказа
     const newOrder = await Order.create({
       id: generateOrderId(),
       user_id: userInstance.id,
@@ -133,7 +130,6 @@ ordersRouter.post('/orders', async (req, res) => {
       delivery_type_id: delivery.type_id,
     });
 
-    // Подготовка данных для доставки
     const deliveryData = {
       order_id: newOrder.id,
       fullName: delivery.data.fullName,
@@ -143,7 +139,6 @@ ordersRouter.post('/orders', async (req, res) => {
 
     await DeliveryData.create(deliveryData);
 
-    // Массив для хранения информации о моделях
     const orderedItems = [];
 
     for (const item of items) {
@@ -170,8 +165,6 @@ ordersRouter.post('/orders', async (req, res) => {
           },
         ],
       });
-      console.log();
-      // Проверка на наличие товара на складе
       if (!countSize || countSize.Count.count < selectCount.count) {
         return res.status(400).json({ message: 'Недостаточно товара на складе' });
       }
@@ -180,20 +173,18 @@ ordersRouter.post('/orders', async (req, res) => {
         where: { count: countSize.Count.count - selectCount.count },
       });
 
-      // Обновление размера счета
       await CountSize.update(
         { count_id: newCount.id },
         { where: { size_id: item.size_id, model_id: item.model_id } },
       );
 
-      // Добавляем информацию о модели в массив
       orderedItems.push({
         mark: countSize.ModelSneaker.Mark.name,
         model: countSize.ModelSneaker.name,
         size: countSize.Size.size,
         count: countSize.Count.count,
       });
-      // Создание записи в OrderItem
+
       await OrderItem.create({
         order_id: newOrder.id,
         model_id: item.model_id,
@@ -203,7 +194,6 @@ ordersRouter.post('/orders', async (req, res) => {
     }
     const typeDelivery = await DeliveryType.findByPk(delivery.type_id);
 
-    // Форматирование информации о моделях, с проверками
     const itemDetails = orderedItems.length
       ? orderedItems.map((item) => `  Модель 👟: ${item.mark} ${item.model}, Размер: ${item.size} EUR, Количество: ${item.count}`).join('\n')
       : 'Нет моделей в заказе.';
@@ -234,12 +224,11 @@ ordersRouter.post('/orders', async (req, res) => {
   
   Наш менеджер свяжется с вами в ближайшее время 📱`;
 
-    // Отправка сообщения пользователю через бота
     await bot.sendMessage(userInstance.chatid, message);
 
     return res.status(201).json({ order: newOrder, delivery: deliveryData });
   } catch (error) {
-    console.error(error); // Для отладки
+    console.error(error);
     res.status(500).json({ message: 'Произошла ошибка при создании заказа.' });
   }
 });
