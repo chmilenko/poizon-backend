@@ -1,7 +1,8 @@
 const userRouter = require('express').Router();
 const { User } = require('../../db/models');
+const authenticateJWT = require('../../middlewares/jwt');
 
-userRouter.get('/users', async (req, res) => {
+userRouter.get('/users', authenticateJWT, async (req, res) => {
   try {
     const users = await User.findAll();
     res.status(201).json(users);
