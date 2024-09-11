@@ -54,7 +54,7 @@ sneakersRouter.get('/sneakers', async (req, res) => {
       price: sneaker.price,
       createdAt: sneaker.createdAt,
       updatedAt: sneaker.updatedAt,
-      photos: sneaker.Photos,
+      photos: sneaker.Photos.sort((a, b) => a.id - b.id),
       description: sneaker.description,
       sizes: sneaker.CountSizes.map((countSize) => ({
         size_id: countSize.Size.id,
