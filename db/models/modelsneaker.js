@@ -8,8 +8,8 @@ module.exports = (sequelize, DataTypes) => {
       Mark, Photo, CountSize, OrderItem,
     }) {
       ModelSneaker.belongsTo(Mark, { foreignKey: 'mark_id' });
-      ModelSneaker.hasMany(Photo, { foreignKey: 'model_id' });
-      ModelSneaker.hasMany(CountSize, { foreignKey: 'model_id' });
+      ModelSneaker.hasMany(Photo, { foreignKey: 'model_id', onDelete: 'CASCADE' });
+      ModelSneaker.hasMany(CountSize, { foreignKey: 'model_id', onDelete: 'CASCADE' });
       ModelSneaker.hasMany(OrderItem, { foreignKey: 'model_id' });
     }
   }

@@ -46,7 +46,6 @@ const channelText  = `
 💥РОЗЫГРЫШ💥
 Для участия надо просто нажать на кнопку 🔴`
 
-const webAppUrl = 'https://poizon-discount.ru/';
 
 let isProcessing = false;
 
@@ -71,7 +70,7 @@ bot.on('message', async (msg) => {
           {
             where: {
               name: userInstance.name,
-            },s
+            },
           },
         );
       }

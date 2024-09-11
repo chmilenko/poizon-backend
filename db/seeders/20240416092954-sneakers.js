@@ -596,7 +596,7 @@ module.exports = {
       { size_id: 12, model_id: 5, count_id: 3 },
       { size_id: 2, model_id: 5, count_id: 3 },
       { size_id: 16, model_id: 5, count_id: 3 },
-      { size_id: 4, model_id: 5, count_id: 6 },
+      { size_id: 2, model_id: 5, count_id: 6 },
       { size_id: 12, model_id: 6, count_id: 4 },
       { size_id: 19, model_id: 6, count_id: 4 },
       { size_id: 20, model_id: 6, count_id: 4 },

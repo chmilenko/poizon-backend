@@ -21,6 +21,7 @@ module.exports = {
           model: 'ModelSneakers',
           key: 'id',
         },
+        onDelete: 'CASCADE',
       },
       count_id: {
         type: Sequelize.INTEGER,

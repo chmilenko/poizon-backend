@@ -343,9 +343,17 @@ sneakersRouter.get('/sneakers/count', async (req, res) => {
 sneakersRouter.delete('/sneakers/:id', authenticateJWT, async (req, res) => {
   try {
     const { id } = req.params;
+    const allSneakers = await ModelSneaker.findAll({ where: { mark_id: id }, include: [Mark] });
+    console.log('ALL SNEAKERS:', allSneakers);
+    
+    if (allSneakers.length === 1) {
+      const mark = await Mark.findOne({ where: { name: ModelSneaker.Mark.name } });
+      console.log('mark:', mark);
+
+      await Mark.delete({ where: { id: mark.id } });
+    }
     await ModelSneaker.destroy({
-      include: [{ model: Mark }, { model: Size }, { model: Photo }],
-      where: { id },
+      where: { id }
     });
     res.status(201).json(id);
   } catch (error) {

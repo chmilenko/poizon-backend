@@ -5,7 +5,7 @@ const {
 module.exports = (sequelize, DataTypes) => {
   class Photo extends Model {
     static associate({ ModelSneaker }) {
-      this.belongsTo(ModelSneaker, { foreignKey: 'model_id' });
+      this.belongsTo(ModelSneaker, { foreignKey: 'model_id', onDelete: 'CASCADE' });
     }
   }
   Photo.init({
@@ -24,6 +24,7 @@ module.exports = (sequelize, DataTypes) => {
     model_id: {
       type: DataTypes.INTEGER,
       primaryKey: true,
+      onDelete: 'CASCADE',
     },
     createdAt: {
       allowNull: false,
