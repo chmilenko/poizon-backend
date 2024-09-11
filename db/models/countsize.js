@@ -7,7 +7,7 @@ module.exports = (sequelize, DataTypes) => {
     static associate({ Size, Count, ModelSneaker }) {
       this.belongsTo(Size, { foreignKey: 'size_id' });
       this.belongsTo(Count, { foreignKey: 'count_id' });
-      this.belongsTo(ModelSneaker, { foreignKey: 'model_id' });
+      this.belongsTo(ModelSneaker, { foreignKey: 'model_id', onDelete: 'CASCADE' });
     }
   }
   CountSize.init({
@@ -26,6 +26,7 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.INTEGER,
       primaryKey: true,
       allowNull: false,
+      onDelete: 'CASCADE',
     },
     count_id: {
       type: DataTypes.INTEGER,

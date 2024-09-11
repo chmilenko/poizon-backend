@@ -17,6 +17,11 @@ module.exports = {
       model_id: {
         type: Sequelize.INTEGER,
         primaryKey: true,
+        references: {
+          model: 'ModelSneakers',
+          key: 'id',
+        },
+        onDelete: 'CASCADE',
       },
       createdAt: {
         allowNull: false,
@@ -25,10 +30,10 @@ module.exports = {
       updatedAt: {
         allowNull: false,
         type: Sequelize.DATE,
-      }
+      },
     });
   },
   async down(queryInterface) {
     await queryInterface.dropTable('Photos');
-  }
+  },
 };
